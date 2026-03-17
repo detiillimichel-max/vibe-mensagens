@@ -6,9 +6,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("chat_vibe");
 
-let nick = "Michel"; 
+// REGRA GERAL: Pega o nome de quem logou. Se não logou, pergunta.
+let nick = localStorage.getItem("vibe_user") || prompt("Seu nome:") || "Usuário";
 
-// --- CONTROLE DE FOTO ---
+// --- BOTÕES DE FOTO E ÁUDIO ---
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
 if(btnFoto) btnFoto.onclick = () => fotoInput.click();
@@ -24,10 +25,8 @@ fotoInput.onchange = (e) => {
     }
 };
 
-// --- CONTROLE DE ÁUDIO (ENVIO REAL) ---
 let mediaRecorder;
 let audioChunks = [];
-
 const btnAudio = document.getElementById('btnAudio');
 if(btnAudio) {
     btnAudio.onclick = async () => {
@@ -36,17 +35,14 @@ if(btnAudio) {
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            
-            mediaRecorder.onstop = async () => {
+            mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    // ENVIANDO O ÁUDIO PARA O FIREBASE
                     db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() });
                 };
                 reader.readAsDataURL(audioBlob);
             };
-
             mediaRecorder.start();
             btnAudio.style.color = "red"; 
         } else {
@@ -56,7 +52,7 @@ if(btnAudio) {
     };
 }
 
-// --- ENVIAR MENSAGEM ---
+// --- ENVIAR E RECEBER ---
 function enviar() {
     const input = document.getElementById('msgInput');
     if (input && input.value.trim() !== "") {
@@ -66,38 +62,34 @@ function enviar() {
 }
 if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
 
-// --- RECEBER MENSAGENS (TEXTO, FOTO E ÁUDIO) ---
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
     const chat = document.getElementById("chat");
     if(!chat) return;
-
     const div = document.createElement("div");
     div.className = "balao";
     div.style.alignSelf = m.autor === nick ? "flex-end" : "flex-start";
     
-    let htmlContent = `<strong>${m.autor}</strong><br>`;
+    let fotoPerfil = `assets/users/${m.autor.toLowerCase()}.jpg`;
+    let html = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                <img src="${fotoPerfil}" onerror="this.src='https://ui-avatars.com/api/?name=${m.autor}'" style="width:20px;height:20px;border-radius:50%;">
+                <small>${m.autor}</small></div>`;
 
-    if (m.tipo === 'foto') {
-        htmlContent += `<img src="${m.imagem}" style="width:100%; border-radius:10px; margin-top:5px;">`;
-    } else if (m.tipo === 'audio') {
-        // CRIA O PLAYER DE ÁUDIO NO CHAT
-        htmlContent += `<audio controls src="${m.audio}" style="width:100%; margin-top:5px;"></audio>`;
-    } else {
-        htmlContent += m.texto;
-    }
-    
-    div.innerHTML = htmlContent;
+    if (m.tipo === 'foto') html += `<img src="${m.imagem}" style="width:100%; border-radius:10px;">`;
+    else if (m.tipo === 'audio') html += `<audio controls src="${m.audio}" style="width:100%;"></audio>`;
+    else html += m.texto;
+
+    div.innerHTML = html;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 });
 
-// --- LOGIN ---
+// --- FUNÇÃO DE LOGIN ---
 function fazerLogin() {
     const email = document.getElementById('email').value;
-    const senha = document.getElementById('password').value;
-    if(email && senha) {
-        nick = email.split('@')[0];
-        window.location.href = "index.html"; 
+    if(email) {
+        const nome = email.split('@')[0];
+        localStorage.setItem("vibe_user", nome);
+        window.location.href = "index.html";
     }
 }
