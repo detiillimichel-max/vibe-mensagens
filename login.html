@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OIO ONE - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilo específico para centralizar o login */
+        body { justify-content: center; align-items: center; background: radial-gradient(circle, #111, #000); }
+        .login-card { 
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(10px); 
+            padding: 30px; 
+            border-radius: 25px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 350px;
+        }
+        h2 { color: #1a73e8; margin-bottom: 20px; }
+        input { width: 100%; margin-bottom: 15px; box-sizing: border-box; }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #1a73e8; 
+            border: none; 
+            color: white; 
+            border-radius: 25px; 
+            font-weight: bold; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>OIO ONE</h2>
+        <input type="email" id="email" placeholder="E-mail">
+        <input type="password" id="password" placeholder="Senha">
+        <button onclick="fazerLogin()">Entrar</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
