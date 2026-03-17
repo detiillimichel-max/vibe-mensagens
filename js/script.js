@@ -4,7 +4,8 @@ const firebaseConfig = {
     projectId: "vibe-app-bbba2"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database().ref("chat_vibe");
+const db = firebase.database().refconst somPlim = new Audio('assets/sounds/vibe.mp3');
+("chat_vibe");
 
 // Pega o nome de quem logou
 let nick = localStorage.getItem("vibe_user") || "Usuário";
