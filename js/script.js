@@ -30,3 +30,16 @@ db.limitToLast(20).on("child_added", snap => {
     document.getElementById("chat").appendChild(div);
     document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
 });
+
+// Função para a tela de Login funcionar
+function fazerLogin() {
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('password').value;
+
+    if(email && senha) {
+        alert("Acesso autorizado ao OIO ONE!");
+        window.location.href = "index.html"; 
+    } else {
+        alert("Por favor, preencha e-mail e senha.");
+    }
+}
