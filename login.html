@@ -6,34 +6,82 @@
     <title>OIO ONE - Login</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { justify-content: center; align-items: center; background: radial-gradient(circle, #111, #000); display: flex; height: 100vh; margin: 0; }
-        .login-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 85%; max-width: 350px; }
-        h2 { color: #1a73e8; margin-bottom: 20px; font-family: sans-serif; }
-        input { width: 100%; margin-bottom: 15px; box-sizing: border-box; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 25px; outline: none; }
-        button { width: 100%; padding: 12px; background: #1a73e8; border: none; color: white; border-radius: 25px; font-weight: bold; cursor: pointer; }
+        /* Garante que o fundo seja o degrade escuro do OIO ONE */
+        body { 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background: radial-gradient(circle, #111, #000);
+        }
+        .login-card { 
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(15px); 
+            padding: 40px 30px; 
+            border-radius: 30px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h2 { color: #1a73e8; margin-bottom: 25px; font-family: sans-serif; letter-spacing: 2px; }
+        input { 
+            width: 100%; 
+            margin-bottom: 15px; 
+            box-sizing: border-box; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid #333; 
+            color: #fff; 
+            padding: 15px; 
+            border-radius: 15px; 
+            outline: none;
+        }
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #1a73e8; 
+            border: none; 
+            color: white; 
+            border-radius: 15px; 
+            font-weight: bold; 
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:active { transform: scale(0.98); background: #1557b5; }
     </style>
 </head>
 <body>
+
     <div class="login-card">
         <h2>OIO ONE</h2>
         <input type="email" id="email" placeholder="Seu e-mail ou nome">
         <input type="password" id="password" placeholder="Senha">
-        <button onclick="entrarAgora()">Entrar</button>
+        <button id="btnEntrar">ENTRAR</button>
     </div>
 
     <script>
-        function entrarAgora() {
-            const campo = document.getElementById('email').value;
-            if(campo) {
-                // Pega o nome e limpa (ex: michel@vibe vira michel)
-                const nomeParaSalvar = campo.split('@')[0];
-                localStorage.setItem("vibe_user", nomeParaSalvar);
-                alert("Bem-vindo ao OIO ONE, " + nomeParaSalvar + "!");
+        // Função para salvar o nome e entrar
+        document.getElementById('btnEntrar').onclick = function() {
+            const campoEmail = document.getElementById('email').value;
+            
+            if(campoEmail.trim() !== "") {
+                // Pega o nome (antes do @ se for email)
+                const usuario = campoEmail.split('@')[0];
+                
+                // Salva no "cérebro" do navegador
+                localStorage.setItem("vibe_user", usuario);
+                
+                alert("Bem-vindo, " + usuario + "!");
+                // Vai para a tela principal
                 window.location.href = "index.html";
             } else {
-                alert("Por favor, digite seu nome ou e-mail.");
+                alert("Ei, Michel! Digite seu nome para entrar.");
             }
-        }
+        };
     </script>
+
 </body>
 </html>
