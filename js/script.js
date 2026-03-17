@@ -5,70 +5,99 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("chat_vibe");
-let nick = prompt("Seu nome:") || "Michel";
+
+let nick = "Michel"; 
 
 // --- CONTROLE DE FOTO ---
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
-
-btnFoto.onclick = () => fotoInput.click();
+if(btnFoto) btnFoto.onclick = () => fotoInput.click();
 
 fotoInput.onchange = (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-            // Envia a imagem como texto (Base64) por enquanto para testar
-            db.push({ autor: nick, imagem: event.target.result, tipo: 'foto' });
+            db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() });
         };
         reader.readAsDataURL(file);
     }
 };
 
-// --- CONTROLE DE ÁUDIO ---
+// --- CONTROLE DE ÁUDIO (ENVIO REAL) ---
 let mediaRecorder;
 let audioChunks = [];
 
-document.getElementById('btnAudio').onclick = async () => {
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            alert("Áudio gravado! Próximo passo: Enviar para a pasta assets/sounds.");
-        };
-        mediaRecorder.start();
-        document.getElementById('btnAudio').style.color = "red"; // Fica vermelho gravando
-    } else {
-        mediaRecorder.stop();
-        document.getElementById('btnAudio').style.color = "#1a73e8";
-    }
-};
+const btnAudio = document.getElementById('btnAudio');
+if(btnAudio) {
+    btnAudio.onclick = async () => {
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    // ENVIANDO O ÁUDIO PARA O FIREBASE
+                    db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() });
+                };
+                reader.readAsDataURL(audioBlob);
+            };
+
+            mediaRecorder.start();
+            btnAudio.style.color = "red"; 
+        } else {
+            mediaRecorder.stop();
+            btnAudio.style.color = "#1a73e8";
+        }
+    };
+}
 
 // --- ENVIAR MENSAGEM ---
 function enviar() {
     const input = document.getElementById('msgInput');
-    if (input.value.trim() !== "") {
-        db.push({ autor: nick, texto: input.value, tipo: 'texto' });
+    if (input && input.value.trim() !== "") {
+        db.push({ autor: nick, texto: input.value, tipo: 'texto', data: Date.now() });
         input.value = "";
     }
 }
-document.getElementById('btnEnviar').onclick = enviar;
+if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
 
-// --- RECEBER MENSAGENS (TEXTO E FOTO) ---
+// --- RECEBER MENSAGENS (TEXTO, FOTO E ÁUDIO) ---
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
+    const chat = document.getElementById("chat");
+    if(!chat) return;
+
     const div = document.createElement("div");
     div.className = "balao";
     div.style.alignSelf = m.autor === nick ? "flex-end" : "flex-start";
     
+    let htmlContent = `<strong>${m.autor}</strong><br>`;
+
     if (m.tipo === 'foto') {
-        div.innerHTML = `<strong>${m.autor}</strong><br><img src="${m.imagem}" style="width:100%; border-radius:10px; margin-top:5px;">`;
+        htmlContent += `<img src="${m.imagem}" style="width:100%; border-radius:10px; margin-top:5px;">`;
+    } else if (m.tipo === 'audio') {
+        // CRIA O PLAYER DE ÁUDIO NO CHAT
+        htmlContent += `<audio controls src="${m.audio}" style="width:100%; margin-top:5px;"></audio>`;
     } else {
-        div.innerHTML = `<strong>${m.autor}</strong><br>${m.texto}`;
+        htmlContent += m.texto;
     }
     
-    document.getElementById("chat").appendChild(div);
-    document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+    div.innerHTML = htmlContent;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
 });
+
+// --- LOGIN ---
+function fazerLogin() {
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('password').value;
+    if(email && senha) {
+        nick = email.split('@')[0];
+        window.location.href = "index.html"; 
+    }
+}
