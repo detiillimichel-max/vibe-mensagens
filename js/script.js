@@ -93,3 +93,4 @@ db.limitToLast(20).on("child_added", snap => {
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 });
+somPlim.play().catch(() => console.log("Som aguardando clique"));
