@@ -6,10 +6,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref("chat_vibe");
 
-// REGRA GERAL: Pega o nome de quem logou. Se não logou, pergunta.
-let nick = localStorage.getItem("vibe_user") || prompt("Seu nome:") || "Usuário";
+// Pega o nome de quem logou
+let nick = localStorage.getItem("vibe_user") || "Usuário";
 
-// --- BOTÕES DE FOTO E ÁUDIO ---
+// --- ENVIAR FOTO ---
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
 if(btnFoto) btnFoto.onclick = () => fotoInput.click();
@@ -25,6 +25,7 @@ fotoInput.onchange = (e) => {
     }
 };
 
+// --- ENVIAR ÁUDIO ---
 let mediaRecorder;
 let audioChunks = [];
 const btnAudio = document.getElementById('btnAudio');
@@ -52,7 +53,7 @@ if(btnAudio) {
     };
 }
 
-// --- ENVIAR E RECEBER ---
+// --- ENVIAR TEXTO ---
 function enviar() {
     const input = document.getElementById('msgInput');
     if (input && input.value.trim() !== "") {
@@ -62,34 +63,32 @@ function enviar() {
 }
 if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
 
+// --- RECEBER TUDO (COM INTELIGÊNCIA DE AVATAR) ---
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
     const chat = document.getElementById("chat");
     if(!chat) return;
+
     const div = document.createElement("div");
     div.className = "balao";
     div.style.alignSelf = m.autor === nick ? "flex-end" : "flex-start";
     
     let fotoPerfil = `assets/users/${m.autor.toLowerCase()}.jpg`;
-    let html = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
-                <img src="${fotoPerfil}" onerror="this.src='https://ui-avatars.com/api/?name=${m.autor}'" style="width:20px;height:20px;border-radius:50%;">
-                <small>${m.autor}</small></div>`;
+    let avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
 
-    if (m.tipo === 'foto') html += `<img src="${m.imagem}" style="width:100%; border-radius:10px;">`;
-    else if (m.tipo === 'audio') html += `<audio controls src="${m.audio}" style="width:100%;"></audio>`;
-    else html += m.texto;
+    let topo = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                    <img src="${fotoPerfil}" onerror="this.src='${avatarFallback}'" style="width:25px; height:25px; border-radius:50%; object-fit: cover;">
+                    <strong style="font-size:12px; color:#1a73e8;">${m.autor}</strong>
+                </div>`;
 
-    div.innerHTML = html;
+    if (m.tipo === 'foto') {
+        div.innerHTML = topo + `<img src="${m.imagem}" style="width:100%; border-radius:10px;">`;
+    } else if (m.tipo === 'audio') {
+        div.innerHTML = topo + `<audio controls src="${m.audio}" style="width:100%;"></audio>`;
+    } else {
+        div.innerHTML = topo + `<span>${m.texto}</span>`;
+    }
+    
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 });
-
-// --- FUNÇÃO DE LOGIN ---
-function fazerLogin() {
-    const email = document.getElementById('email').value;
-    if(email) {
-        const nome = email.split('@')[0];
-        localStorage.setItem("vibe_user", nome);
-        window.location.href = "index.html";
-    }
-}
