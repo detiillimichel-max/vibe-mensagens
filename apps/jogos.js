@@ -1,24 +1,31 @@
-/* MÓDULO DE JOGOS - OIO ONE 🎮 */
+/* LÓGICA VIBE VÍDEOS (Estilo TikTok) 🚀 */
 
-function abrirJogo(tipo) {
-    const jogos = {
-        'domino': 'https://www.agame.com/game/dominoes-classic',
-        'xadrez': 'https://www.agame.com/game/chess-classic'
-    };
+const dbVideos = firebase.database().ref("vibe_videos_galeria");
 
-    if (jogos[tipo]) {
-        // Abre o jogo em uma camada por cima, sem fechar o app
-        window.open(jogos[tipo], '_blank');
-    }
+// Função para voltar ao Chat (O botão VOLTAR da sua imagem)
+function voltarParaChat() {
+    window.location.href = "index.html";
 }
 
-// Sistema de Likes para os Jogos (Emoji Nativo 👍)
-function curtirJogo(nomeJogo) {
-    const user = localStorage.getItem("vibe_user") || "Jogador";
-    firebase.database().ref("likes_jogos").child(nomeJogo).push(user);
+// Escuta a Galeria e cria os Cards com Curtidas
+dbVideos.on("child_added", snap => {
+    const v = snap.val();
+    const feed = document.getElementById("feed");
     
-    if(navigator.vibrate) navigator.vibrate([30, 30]);
-    console.log("Você curtiu o jogo: " + nomeJogo);
-}
+    const card = document.createElement("div");
+    card.className = "card-video";
+    card.innerHTML = `
+        <video src="${v.url}" controls style="width:100%; border-radius:15px;"></video>
+        <div style="display:flex; justify-content:space-between; padding:10px; color:white;">
+            <span>@${v.autor}</span>
+            <span onclick="curtirVideo('${snap.key}')" style="cursor:pointer;">❤️ Curtir</span>
+        </div>
+    `;
+    feed.prepend(card);
+});
 
-console.log("🎮 Módulo de Jogos pronto para o OIO ONE!");
+function curtirVideo(id) {
+    const user = localStorage.getItem("vibe_user") || "Usuário";
+    dbVideos.child(id).child("likes").child(user).set(true);
+    if(navigator.vibrate) navigator.vibrate(50); // Vibração nativa
+}
