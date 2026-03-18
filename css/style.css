@@ -1,89 +1,32 @@
 body { margin: 0; background: #000; color: #fff; font-family: sans-serif; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-#chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-.balao { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(5px); padding: 12px; border-radius: 18px; max-width: 80%; border: 1px solid rgba(255,255,255,0.1); }
-.barra { display: flex; align-items: center; gap: 15px; padding: 15px; background: #000; border-top: 1px solid #222; padding-bottom: 35px; }
+#chat { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
+.balao { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(5px); padding: 12px; border-radius: 18px; max-width: 80%; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 5px; }
+
+.barra { 
+    display: flex; align-items: center; gap: 15px; padding: 15px; 
+    background: rgba(0,0,0,0.95); border-top: 1px solid #222; 
+    position: fixed; bottom: 0; width: 100%; box-sizing: border-box;
+    z-index: 100; backdrop-filter: blur(10px);
+}
+
 .icon { color: #1a73e8; font-size: 24px; cursor: pointer; }
 input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 25px; outline: none; }
-/* ALOCAÇÃO: Final do style.css */
 
-/* A Camada Mural: Estilo 'Vidro' (Glassmorphism) */
-#mural-ehub {
-    position: fixed;
-    inset: 0; /* Ocupa a tela toda */
-    background: rgba(0, 0, 0, 0.9); /* Fundo preto semi-transparente */
-    backdrop-filter: blur(15px); /* Efeito de vidro borrado do Android */
-    z-index: 2000; /* Garante que fica por cima do chat */
-    display: none; /* Começa escondido */
-    flex-direction: column;
+/* GAVETA OIO ONE */
+.gaveta-container {
+    position: fixed; bottom: -100%; left: 0; width: 100%; height: 75%;
+    background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(20px);
+    border-radius: 30px 30px 0 0; border-top: 1px solid rgba(255,255,255,0.2);
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000; display: flex; flex-direction: column;
 }
 
-/* Classe que vamos usar para mostrar o mural */
-.camada-ativa {
-    display: flex !important;
-}
+.gaveta-container.aberta { bottom: 0 !important; }
 
-/* O Carrossel: Preparado para o deslize orgânico */
-#eHub-Carrossel {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; /* Corta o que estiver fora da tela */
-    position: relative;
-}
+.handle-area { width: 100%; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+.handle-bar { width: 50px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 10px; }
 
-.foto-item img {
-    max-width: 90%;
-    max-height: 80vh;
-    border-radius: 20px; /* Cantos arredondados estilo Android */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: transform 0.1s ease-out; /* Para o movimento acompanhar o dedo */
-}
-
-/* Botão Fechar Estilo Google */
-.btn-fechar-mural {
-    position: absolute;
-    top: 30px;
-    right: 25px;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 20px;
-}
-/* FORÇAR O MURAL A FICAR ESCONDIDO NA INICIALIZAÇÃO */
-#mural-ehub {
-    display: none !important; /* Isso garante que ele não apareça embaixo do chat */
-}
-
-/* SÓ MOSTRAR QUANDO A CLASSE ESTIVER ATIVA */
-#mural-ehub.camada-ativa {
-    display: flex !important;
-}
-/* O PUXADOR (A ÁREA DOS TRACINHOS) */
-.handle-area {
-    width: 100%;
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: grab;
-}
-
-.handle-bar {
-    width: 40px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-}
-
-/* EFEITO DE VIDRO NO RODAPÉ DO CHAT */
-.barra {
-    background: rgba(0, 0, 0, 0.7) !important;
-    backdrop-filter: blur(15px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    position: relative;
-    z-index: 10;
-}
+.gaveta-content { padding: 20px; text-align: center; color: white; }
+.grid-apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+.app-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
+.app-item i { font-size: 30px; color: #1a73e8; }
