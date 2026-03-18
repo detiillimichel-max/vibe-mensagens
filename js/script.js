@@ -1,20 +1,21 @@
-// 1. Configuração do Firebase
+// 1. Verificação de Segurança (Login)
+let nick = localStorage.getItem("vibe_user");
+if (!nick) {
+    window.location.href = "login.html";
+}
+
+// 2. Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAslIIn6h6NdVhuHdwXjS1EhAbItrAXq7Y",
     databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com/",
     projectId: "vibe-app-bbba2"
 };
-
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const db = firebase.database().ref("chat_vibe");
 
-// 2. Definição do Som (Prepara o arquivo)
+// 3. Som e Recebimento
 const somPlim = new Audio('assets/sounds/vibe.mp3');
 
-// 3. Variáveis de Usuário
-let nick = localStorage.getItem("vibe_user") || "Usuário";
-
-// 4. Lógica de Recebimento de Mensagens
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
     const chat = document.getElementById("chat");
@@ -40,18 +41,10 @@ db.limitToLast(20).on("child_added", snap => {
     
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-
-    // Toca o som apenas se a mensagem for de outra pessoa
-    if (m.autor !== nick) {
-        somPlim.play().catch(() => {
-            console.log("Som aguardando interação do usuário.");
-        });
-    }
+    if (m.autor !== nick) { somPlim.play().catch(() => {}); }
 });
 
-// 5. Funções de Envio (Abaixo estão as funções que fazem os botões funcionarem)
-
-// --- ENVIAR TEXTO ---
+// 4. Funções de Envio
 function enviar() {
     const input = document.getElementById('msgInput');
     if (input && input.value.trim() !== "") {
@@ -59,48 +52,41 @@ function enviar() {
         input.value = "";
     }
 }
-if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
+document.getElementById('btnEnviar').onclick = enviar;
 
-// --- ENVIAR FOTO ---
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
-if(btnFoto) btnFoto.onclick = () => fotoInput.click();
-
+btnFoto.onclick = () => fotoInput.click();
 fotoInput.onchange = (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => {
-            db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() });
-        };
+        reader.onload = (event) => { db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() }); };
         reader.readAsDataURL(file);
     }
 };
 
-// --- ENVIAR ÁUDIO ---
-let mediaRecorder;
-let audioChunks = [];
+let mediaRecorder; let audioChunks = [];
 const btnAudio = document.getElementById('btnAudio');
-if(btnAudio) {
-    btnAudio.onclick = async () => {
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() });
-                };
-                reader.readAsDataURL(audioBlob);
-            };
-            mediaRecorder.start();
-            btnAudio.style.color = "red"; 
-        } else {
-            mediaRecorder.stop();
-            btnAudio.style.color = "#1a73e8";
-        }
-    };
+btnAudio.onclick = async () => {
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.onload = (event) => { db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() }); };
+            reader.readAsDataURL(audioBlob);
+        };
+        mediaRecorder.start(); btnAudio.style.color = "red"; 
+    } else { mediaRecorder.stop(); btnAudio.style.color = "#1a73e8"; }
+};
+
+// 5. Controle da Gaveta e-Hub
+function abrirGaveta() { 
+    document.getElementById('gaveta-ehub').classList.add('aberta'); 
+    if(navigator.vibrate) navigator.vibrate(30);
 }
+function fecharGaveta() { document.getElementById('gaveta-ehub').classList.remove('aberta'); }
