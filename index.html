@@ -20,5 +20,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="js/script.js"></script>
+<div id="mural-ehub" class="camada-oculta">
+    
+    <button class="btn-fechar-mural" onclick="fecharMural()">✕</button>
+
+    <div id="eHub-Carrossel">
+        <div class="foto-item">
+            <img src="https://via.placeholder.com/400x800?text=Sua+Galeria" alt="Preview">
+        </div>
+    </div>
+
+    <div class="mural-footer">
+        <button onclick="document.getElementById('inputGaleria').click()">
+            <i class="fa-solid fa-plus"></i> Adicionar ao e-Hub
+        </button>
+    </div>
+</div>
+
+<input type="file" id="inputGaleria" accept="image/*" style="display:none">
 </body>
 </html>
