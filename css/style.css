@@ -62,3 +62,28 @@ input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; paddi
 #mural-ehub.camada-ativa {
     display: flex !important;
 }
+/* O PUXADOR (A ÁREA DOS TRACINHOS) */
+.handle-area {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+}
+
+.handle-bar {
+    width: 40px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+/* EFEITO DE VIDRO NO RODAPÉ DO CHAT */
+.barra {
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    position: relative;
+    z-index: 10;
+}
