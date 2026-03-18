@@ -53,3 +53,12 @@ input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; paddi
     border-radius: 50%;
     font-size: 20px;
 }
+/* FORÇAR O MURAL A FICAR ESCONDIDO NA INICIALIZAÇÃO */
+#mural-ehub {
+    display: none !important; /* Isso garante que ele não apareça embaixo do chat */
+}
+
+/* SÓ MOSTRAR QUANDO A CLASSE ESTIVER ATIVA */
+#mural-ehub.camada-ativa {
+    display: flex !important;
+}
