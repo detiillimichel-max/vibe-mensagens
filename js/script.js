@@ -1,14 +1,65 @@
+// 1. Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAslIIn6h6NdVhuHdwXjS1EhAbItrAXq7Y",
     databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com/",
     projectId: "vibe-app-bbba2"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database().refconst somPlim = new Audio('assets/sounds/vibe.mp3');
-("chat_vibe");
 
-// Pega o nome de quem logou
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("chat_vibe");
+
+// 2. Definição do Som (Prepara o arquivo)
+const somPlim = new Audio('assets/sounds/vibe.mp3');
+
+// 3. Variáveis de Usuário
 let nick = localStorage.getItem("vibe_user") || "Usuário";
+
+// 4. Lógica de Recebimento de Mensagens
+db.limitToLast(20).on("child_added", snap => {
+    const m = snap.val();
+    const chat = document.getElementById("chat");
+    if(!chat) return;
+
+    const div = document.createElement("div");
+    div.className = "balao";
+    div.style.alignSelf = m.autor === nick ? "flex-end" : "flex-start";
+    
+    let avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
+    let topo = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                    <img src="assets/users/${m.autor.toLowerCase()}.jpg" onerror="this.src='${avatarFallback}'" style="width:25px; height:25px; border-radius:50%;">
+                    <strong style="font-size:12px; color:#1a73e8;">${m.autor}</strong>
+                </div>`;
+
+    if (m.tipo === 'foto') {
+        div.innerHTML = topo + `<img src="${m.imagem}" style="width:100%; border-radius:10px;">`;
+    } else if (m.tipo === 'audio') {
+        div.innerHTML = topo + `<audio controls src="${m.audio}" style="width:100%;"></audio>`;
+    } else {
+        div.innerHTML = topo + `<span>${m.texto}</span>`;
+    }
+    
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+
+    // Toca o som apenas se a mensagem for de outra pessoa
+    if (m.autor !== nick) {
+        somPlim.play().catch(() => {
+            console.log("Som aguardando interação do usuário.");
+        });
+    }
+});
+
+// 5. Funções de Envio (Abaixo estão as funções que fazem os botões funcionarem)
+
+// --- ENVIAR TEXTO ---
+function enviar() {
+    const input = document.getElementById('msgInput');
+    if (input && input.value.trim() !== "") {
+        db.push({ autor: nick, texto: input.value, tipo: 'texto', data: Date.now() });
+        input.value = "";
+    }
+}
+if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
 
 // --- ENVIAR FOTO ---
 const btnFoto = document.getElementById('btnFoto');
@@ -53,44 +104,3 @@ if(btnAudio) {
         }
     };
 }
-
-// --- ENVIAR TEXTO ---
-function enviar() {
-    const input = document.getElementById('msgInput');
-    if (input && input.value.trim() !== "") {
-        db.push({ autor: nick, texto: input.value, tipo: 'texto', data: Date.now() });
-        input.value = "";
-    }
-}
-if(document.getElementById('btnEnviar')) document.getElementById('btnEnviar').onclick = enviar;
-
-// --- RECEBER TUDO (COM INTELIGÊNCIA DE AVATAR) ---
-db.limitToLast(20).on("child_added", snap => {
-    const m = snap.val();
-    const chat = document.getElementById("chat");
-    if(!chat) return;
-
-    const div = document.createElement("div");
-    div.className = "balao";
-    div.style.alignSelf = m.autor === nick ? "flex-end" : "flex-start";
-    
-    let fotoPerfil = `assets/users/${m.autor.toLowerCase()}.jpg`;
-    let avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
-
-    let topo = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-                    <img src="${fotoPerfil}" onerror="this.src='${avatarFallback}'" style="width:25px; height:25px; border-radius:50%; object-fit: cover;">
-                    <strong style="font-size:12px; color:#1a73e8;">${m.autor}</strong>
-                </div>`;
-
-    if (m.tipo === 'foto') {
-        div.innerHTML = topo + `<img src="${m.imagem}" style="width:100%; border-radius:10px;">`;
-    } else if (m.tipo === 'audio') {
-        div.innerHTML = topo + `<audio controls src="${m.audio}" style="width:100%;"></audio>`;
-    } else {
-        div.innerHTML = topo + `<span>${m.texto}</span>`;
-    }
-    
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-});
-somPlim.play().catch(() => console.log("Som aguardando clique"));
