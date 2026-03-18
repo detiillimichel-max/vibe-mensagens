@@ -3,61 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vibe Mensagens</title>
+    <title>Vibe - OIO ONE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
     <div id="chat"></div>
+
     <div class="barra">
         <i class="fa-solid fa-camera icon" id="btnFoto"></i>
         <i class="fa-solid fa-microphone icon" id="btnAudio"></i>
         <input type="text" id="msgInput" placeholder="Sua vibe..." autocomplete="off">
+        <i class="fa-solid fa-plus icon" onclick="abrirGaveta()"></i>
         <i class="fa-solid fa-paper-plane icon" id="btnEnviar"></i>
     </div>
+
+    <div id="gaveta-ehub" class="gaveta-container">
+        <div class="handle-area" onclick="fecharGaveta()">
+            <div class="handle-bar"></div>
+        </div>
+        
+        <div class="gaveta-content">
+            <h3>e-Hub Utilidades</h3>
+            <div class="grid-apps">
+                <div class="app-item">
+                    <i class="fa-solid fa-images"></i>
+                    <span>Galeria</span>
+                </div>
+                <div class="app-item">
+                    <i class="fa-brands fa-google"></i>
+                    <span>Google</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <input type="file" id="fotoInput" style="display: none;" accept="image/*">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="js/script.js"></script>
-<div id="mural-ehub" class="camada-oculta">
-    
-    <button class="btn-fechar-mural" onclick="fecharMural()">✕</button>
-
-    <div id="eHub-Carrossel">
-        <div class="foto-item">
-            <img src="https://via.placeholder.com/400x800?text=Sua+Galeria" alt="Preview">
-        </div>
-    </div>
-
-    <div class="mural-footer">
-        <button onclick="document.getElementById('inputGaleria').click()">
-            <i class="fa-solid fa-plus"></i> Adicionar ao e-Hub
-        </button>
-    </div>
-</div>
-
-<input type="file" id="inputGaleria" accept="image/*" style="display:none">
-<div id="mural-ehub" class="camada-oculta">
-    
-    <div class="handle-area" onclick="fecharMural()">
-        <div class="handle-bar"></div>
-    </div>
-
-    <div id="eHub-Carrossel">
-        <div class="foto-item">
-            <img src="https://via.placeholder.com/400x800?text=Sua+Galeria" alt="Preview">
-        </div>
-    </div>
-
-    <div class="mural-footer">
-        <button onclick="document.getElementById('inputGaleria').click()">
-            <i class="fa-solid fa-plus"></i> Adicionar ao e-Hub
-        </button>
-    </div>
-</div>
-
-<input type="file" id="inputGaleria" accept="image/*" style="display:none">
-    
 </body>
 </html>
