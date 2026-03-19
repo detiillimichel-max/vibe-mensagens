@@ -39,7 +39,7 @@
             <h2>🎥 FILMES ANTIGOS</h2>
         </div>
 
-        <div class="card-vibe" onclick="abrirCine('archive', 'https://archive.org/embed/classic_cartoons&playlist=1&autoplay=1')">
+        <div class="card-vibe" onclick="abrirCine('archive', 'https://archive.org/embed/classic_cartoons?ui=embed&autoplay=1')">
             <h2>🧸 DESENHOS RETRÔ</h2>
         </div>
 
@@ -59,14 +59,14 @@
             
             let urlFinal = "";
             if(tipo === 'youtube') {
-                // Adicionamos controles e escondemos branding para o YouTube aceitar
-                urlFinal = "https://www.youtube.com/embed/videoseries?list=" + fonte + "&autoplay=1&controls=1&modestbranding=1";
+                urlFinal = "https://www.youtube.com/embed/videoseries?list=" + fonte + "&autoplay=1&controls=1";
             } else {
-                // Link 'embed' do Archive só traz o vídeo, sem o site ao redor
+                // A flag ?ui=embed força o Archive a esconder o site e mostrar só o vídeo
                 urlFinal = fonte;
             }
             
             document.getElementById('frame-vibe').src = urlFinal;
+            // Tenta tocar o som de clique se o Maestro estiver carregado
             if(window.tocarSom) tocarSom('clique');
         }
 
