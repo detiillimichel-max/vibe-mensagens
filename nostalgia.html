@@ -6,75 +6,73 @@
     <title>Nostalgia - OIO ONE 📺</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { background: #000; color: white; margin: 0; font-family: sans-serif; text-align: center; overflow: hidden; }
+        body { background: #000; color: white; margin: 0; font-family: sans-serif; overflow: hidden; }
         
+        /* Botão Voltar Azul Google */
         .btn-voltar { 
             position: fixed; top: 20px; left: 20px; 
-            background: #4285F4; color: white; padding: 10px 20px; 
-            border-radius: 50px; border: none; font-weight: bold; z-index: 100;
+            background: #4285F4; color: white; padding: 12px 25px; 
+            border-radius: 50px; border: none; font-weight: bold; z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer;
         }
 
-        /* Menu de Escolha */
-        .menu-nostalgia {
+        /* Menu de Seleção (Estilo Cards) */
+        .menu-container {
             display: flex; flex-direction: column; height: 100vh;
-            justify-content: center; align-items: center; gap: 30px;
+            justify-content: center; align-items: center; gap: 25px;
+            background: radial-gradient(circle, #1a1a1a, #000);
         }
 
-        .opcao-card {
-            width: 80%; background: rgba(255,255,255,0.1);
-            padding: 40px; border-radius: 20px; border: 2px solid #4285F4;
-            font-size: 24px; font-weight: bold; cursor: pointer;
-            backdrop-filter: blur(10px); transition: 0.3s;
+        .card-opcao {
+            width: 85%; max-width: 400px; background: rgba(255,255,255,0.05);
+            padding: 30px; border-radius: 25px; border: 1px solid #4285F4;
+            text-align: center; backdrop-filter: blur(10px);
         }
 
-        /* Player que ocupa tudo */
-        #player-full {
-            display: none; width: 100vw; height: 100vh; background: #000;
-        }
+        .card-opcao h2 { margin: 0; font-size: 20px; color: #4285F4; }
+        .card-opcao p { font-size: 14px; opacity: 0.7; }
 
+        /* Player Seguro (Anti-Bloqueio) */
+        #player-area { display: none; width: 100vw; height: 100vh; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <button class="btn-voltar" onclick="voltarOuFechar()">← VOLTAR</button>
+    <button class="btn-voltar" onclick="voltarNostalgia()">← VOLTAR</button>
 
-    <div id="menu-inicial" class="menu-nostalgia">
-        <h2 style="color: #4285F4;">O que vamos recordar? 😊</h2>
-        <div class="opcao-card" onclick="carregarVideo('PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
-            🎬 FILMES ANTIGOS
+    <div id="menu-area" class="menu-container">
+        <h1 style="margin-bottom: 30px;">Cine Nostalgia 🎞️</h1>
+        
+        <div class="card-opcao" onclick="playVibe('PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
+            <h2>🎥 FILMES ANTIGOS</h2>
+            <p>Os grandes clássicos dublados</p>
         </div>
-        <div class="opcao-card" onclick="carregarVideo('PLX4_S_H_Z6Zf_kYh-gL6-2D6-jR5XvA7W')">
-            🧸 DESENHOS CLÁSSICOS
+
+        <div class="card-opcao" onclick="playVibe('PLX4_S_H_Z6Zf_kYh-gL6-2D6-jR5XvA7W')">
+            <h2>🧸 DESENHOS RETRÔ</h2>
+            <p>A infância de volta na tela</p>
         </div>
     </div>
 
-    <div id="player-full">
-        <iframe id="video-frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="player-area">
+        <iframe id="cine-frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
     <script>
-        function carregarVideo(idPlaylist) {
-            const player = document.getElementById('player-full');
-            const menu = document.getElementById('menu-inicial');
-            const frame = document.getElementById('video-frame');
-
-            // Esconde menu e mostra player
-            menu.style.display = 'none';
-            player.style.display = 'block';
-
-            // Carrega a playlist sem controles e sem logos
-            frame.src = `https://www.youtube.com/embed/videoseries?list=${idPlaylist}&autoplay=1&controls=1&modestbranding=1&rel=0`;
-            
-            if(typeof tocarSom === 'function') tocarSom('clique');
+        function playVibe(id) {
+            document.getElementById('menu-area').style.display = 'none';
+            document.getElementById('player-area').style.display = 'block';
+            // Usamos o link 'embed' padrão que o YouTube aceita melhor
+            document.getElementById('cine-frame').src = "https://www.youtube.com/embed/videoseries?list=" + id + "&autoplay=1&rel=0";
+            if(window.tocarSom) tocarSom('clique');
         }
 
-        function voltarOuFechar() {
-            const player = document.getElementById('player-full');
-            if (player.style.display === 'block') {
+        function voltarNostalgia() {
+            if(document.getElementById('player-area').style.display === 'block') {
                 location.reload(); // Volta para a escolha
             } else {
-                window.location.href = 'index.html'; // Volta para o chat
+                window.location.href = "index.html"; // Volta para o Chat
             }
         }
     </script>
