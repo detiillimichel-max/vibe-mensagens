@@ -39,12 +39,12 @@
             <h2>🎥 FILMES ANTIGOS</h2>
         </div>
 
-        <div class="card-vibe" onclick="abrirCine('archive', 'https://archive.org/embed/classic_cartoons&playlist=1')">
-            <h2>🧸 DESENHOS RETRÔ (LIVRE)</h2>
+        <div class="card-vibe" onclick="abrirCine('archive', 'https://archive.org/embed/classic_cartoons&playlist=1&autoplay=1')">
+            <h2>🧸 DESENHOS RETRÔ</h2>
         </div>
 
-        <div class="card-vibe" onclick="window.open('https://www.youtube.com/results?search_query=filmes+antigos+dublados+completos', '_blank')">
-            <h2 style="color: #00ffff;">🔍 PESQUISAR MAIS...</h2>
+        <div class="card-vibe" onclick="window.open('https://www.youtube.com/results?search_query=desenhos+antigos+completo+dublado', '_blank')">
+            <h2 style="color: #00ffff;">🔍 PESQUISAR DESENHOS</h2>
         </div>
     </div>
 
@@ -59,9 +59,10 @@
             
             let urlFinal = "";
             if(tipo === 'youtube') {
-                urlFinal = "https://www.youtube.com/embed/videoseries?list=" + fonte + "&autoplay=1";
+                // Adicionamos controles e escondemos branding para o YouTube aceitar
+                urlFinal = "https://www.youtube.com/embed/videoseries?list=" + fonte + "&autoplay=1&controls=1&modestbranding=1";
             } else {
-                // Link do Archive.org que não tem bloqueio de direitos autorais
+                // Link 'embed' do Archive só traz o vídeo, sem o site ao redor
                 urlFinal = fonte;
             }
             
