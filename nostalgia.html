@@ -7,28 +7,23 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { background: #000; color: white; margin: 0; font-family: sans-serif; overflow: hidden; }
-        
         .btn-voltar { 
             position: fixed; top: 20px; left: 20px; 
             background: #4285F4; color: white; padding: 12px 25px; 
             border-radius: 50px; border: none; font-weight: bold; z-index: 1000;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer;
         }
-
         .menu-container {
             display: flex; flex-direction: column; height: 100vh;
             justify-content: center; align-items: center; gap: 20px;
             background: radial-gradient(circle, #1a1a1a, #000);
         }
-
         .card-vibe {
             width: 85%; max-width: 400px; background: rgba(255,255,255,0.05);
             padding: 25px; border-radius: 20px; border: 1px solid #4285F4;
             text-align: center; backdrop-filter: blur(10px); cursor: pointer;
         }
-
         .card-vibe h2 { margin: 0; font-size: 18px; color: #4285F4; }
-
         #player-vibe { display: none; width: 100vw; height: 100vh; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
@@ -40,12 +35,12 @@
     <div id="menu-vibe" class="menu-container">
         <h1 style="margin-bottom: 20px;">Cine Nostalgia 🎞️</h1>
         
-        <div class="card-vibe" onclick="abrirCine('PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
+        <div class="card-vibe" onclick="abrirCine('youtube', 'PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
             <h2>🎥 FILMES ANTIGOS</h2>
         </div>
 
-        <div class="card-vibe" onclick="abrirCine('PLX4_S_H_Z6Zf_kYh-gL6-2D6-jR5XvA7W')">
-            <h2>🧸 DESENHOS RETRÔ</h2>
+        <div class="card-vibe" onclick="abrirCine('archive', 'https://archive.org/embed/classic_cartoons&playlist=1')">
+            <h2>🧸 DESENHOS RETRÔ (LIVRE)</h2>
         </div>
 
         <div class="card-vibe" onclick="window.open('https://www.youtube.com/results?search_query=filmes+antigos+dublados+completos', '_blank')">
@@ -58,11 +53,19 @@
     </div>
 
     <script>
-        function abrirCine(id) {
+        function abrirCine(tipo, fonte) {
             document.getElementById('menu-vibe').style.display = 'none';
             document.getElementById('player-vibe').style.display = 'block';
-            // Link direto de vídeos públicos para evitar o bloqueio de "Este vídeo não está disponível"
-            document.getElementById('frame-vibe').src = "https://www.youtube.com/embed/videoseries?list=" + id + "&autoplay=1";
+            
+            let urlFinal = "";
+            if(tipo === 'youtube') {
+                urlFinal = "https://www.youtube.com/embed/videoseries?list=" + fonte + "&autoplay=1";
+            } else {
+                // Link do Archive.org que não tem bloqueio de direitos autorais
+                urlFinal = fonte;
+            }
+            
+            document.getElementById('frame-vibe').src = urlFinal;
             if(window.tocarSom) tocarSom('clique');
         }
 
