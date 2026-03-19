@@ -2,62 +2,69 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toc Vídeos - OIO ONE</title>
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vibe TikTok - OIO ONE</title>
     <style>
-        body { background: #000; color: white; margin: 0; font-family: sans-serif; overflow: hidden; }
-        .feed-tiktok { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .card-video { height: 100vh; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
         
+        /* Container Estilo TikTok (Scroll Vertical) */
+        .vibe-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+        }
+
+        .video-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
         /* Botão Voltar Azul Google */
-        .btn-voltar { 
-            position: absolute; top: 20px; left: 20px; 
-            background: #4285F4; color: white; 
-            padding: 10px 20px; border-radius: 50px; 
-            font-weight: bold; text-decoration: none;
-            z-index: 100; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        .btn-voltar {
+            position: fixed; top: 20px; left: 20px;
+            background: #4285F4; color: white; border: none;
+            padding: 12px 20px; border-radius: 50px;
+            font-weight: bold; z-index: 1000; cursor: pointer;
         }
 
-        /* Botão Novo Vídeo Central */
-        .btn-novo { 
-            position: absolute; bottom: 30px; left: 50%; 
-            transform: translateX(-50%); background: #00ffff; 
-            color: black; padding: 12px 30px; border-radius: 30px; 
-            font-weight: bold; border: none; z-index: 100;
+        /* Overlay de Interação (Likes) */
+        .side-bar {
+            position: absolute; right: 15px; bottom: 100px;
+            display: flex; flex-direction: column; gap: 25px; align-items: center;
         }
-
-        /* Área de Curtida (Emoji Nativo) */
-        .area-social { 
-            position: absolute; right: 20px; bottom: 100px; 
-            display: flex; flex-direction: column; align-items: center; gap: 5px; 
-        }
-        .btn-like { background: none; border: none; font-size: 35px; cursor: pointer; }
-        .count-like { font-size: 14px; text-shadow: 1px 1px 2px #000; }
+        .icon-btn { font-size: 30px; cursor: pointer; text-shadow: 2px 2px 5px #000; }
     </style>
 </head>
 <body>
 
-    <button class="btn-voltar" onclick="window.location.href='index.html'">
-        ← VOLTAR
-    </button>
+    <button class="btn-voltar" onclick="window.location.href='index.html'">← VOLTAR</button>
 
-    <div id="feed" class="feed-tiktok">
-        <div class="card-video">
-            <video src="" loop muted onclick="this.paused ? this.play() : this.pause()"></video>
-            <div class="area-social">
-                <button class="btn-like" onclick="darLike('video1')">❤️</button>
-                <span class="count-like">0</span>
+    <div class="vibe-container" id="feed">
+        
+        <div class="video-section">
+            <iframe src="https://www.youtube.com/embed/21X5lGlDOfg?autoplay=1&controls=0&modestbranding=1&loop=1" allow="autoplay"></iframe>
+            <div class="side-bar">
+                <div class="icon-btn" onclick="darLike('v1')">❤️</div>
+                <div class="icon-btn" onclick="window.tocarSom('clique')">💬</div>
             </div>
         </div>
+
+        <div class="video-section">
+            <iframe src="https://archive.org/embed/classic_cartoons&autoplay=1" allow="autoplay"></iframe>
+            <div class="side-bar">
+                <div class="icon-btn" onclick="darLike('v2')">❤️</div>
+                <div class="icon-btn" onclick="window.tocarSom('clique')">💬</div>
+            </div>
+        </div>
+
     </div>
-
-    <button class="btn-novo" onclick="document.getElementById('postVideo').click()">
-        + NOVO VÍDEO
-    </button>
-
-    <input type="file" id="postVideo" style="display:none" accept="video/*">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
