@@ -8,7 +8,6 @@
     <style>
         body { background: #000; color: white; margin: 0; font-family: sans-serif; overflow: hidden; }
         
-        /* Botão Voltar Azul Google */
         .btn-voltar { 
             position: fixed; top: 20px; left: 20px; 
             background: #4285F4; color: white; padding: 12px 25px; 
@@ -16,24 +15,21 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer;
         }
 
-        /* Menu de Seleção (Estilo Cards) */
         .menu-container {
             display: flex; flex-direction: column; height: 100vh;
-            justify-content: center; align-items: center; gap: 25px;
+            justify-content: center; align-items: center; gap: 20px;
             background: radial-gradient(circle, #1a1a1a, #000);
         }
 
-        .card-opcao {
+        .card-vibe {
             width: 85%; max-width: 400px; background: rgba(255,255,255,0.05);
-            padding: 30px; border-radius: 25px; border: 1px solid #4285F4;
-            text-align: center; backdrop-filter: blur(10px);
+            padding: 25px; border-radius: 20px; border: 1px solid #4285F4;
+            text-align: center; backdrop-filter: blur(10px); cursor: pointer;
         }
 
-        .card-opcao h2 { margin: 0; font-size: 20px; color: #4285F4; }
-        .card-opcao p { font-size: 14px; opacity: 0.7; }
+        .card-vibe h2 { margin: 0; font-size: 18px; color: #4285F4; }
 
-        /* Player Seguro (Anti-Bloqueio) */
-        #player-area { display: none; width: 100vw; height: 100vh; background: #000; }
+        #player-vibe { display: none; width: 100vw; height: 100vh; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
@@ -41,38 +37,40 @@
 
     <button class="btn-voltar" onclick="voltarNostalgia()">← VOLTAR</button>
 
-    <div id="menu-area" class="menu-container">
-        <h1 style="margin-bottom: 30px;">Cine Nostalgia 🎞️</h1>
+    <div id="menu-vibe" class="menu-container">
+        <h1 style="margin-bottom: 20px;">Cine Nostalgia 🎞️</h1>
         
-        <div class="card-opcao" onclick="playVibe('PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
+        <div class="card-vibe" onclick="abrirCine('PL_Xv5U5-GZ6oH1f0fQZfV9Z8pU_WzYy0Z')">
             <h2>🎥 FILMES ANTIGOS</h2>
-            <p>Os grandes clássicos dublados</p>
         </div>
 
-        <div class="card-opcao" onclick="playVibe('PLX4_S_H_Z6Zf_kYh-gL6-2D6-jR5XvA7W')">
+        <div class="card-vibe" onclick="abrirCine('PLX4_S_H_Z6Zf_kYh-gL6-2D6-jR5XvA7W')">
             <h2>🧸 DESENHOS RETRÔ</h2>
-            <p>A infância de volta na tela</p>
+        </div>
+
+        <div class="card-vibe" onclick="window.open('https://www.youtube.com/results?search_query=filmes+antigos+dublados+completos', '_blank')">
+            <h2 style="color: #00ffff;">🔍 PESQUISAR MAIS...</h2>
         </div>
     </div>
 
-    <div id="player-area">
-        <iframe id="cine-frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="player-vibe">
+        <iframe id="frame-vibe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
     <script>
-        function playVibe(id) {
-            document.getElementById('menu-area').style.display = 'none';
-            document.getElementById('player-area').style.display = 'block';
-            // Usamos o link 'embed' padrão que o YouTube aceita melhor
-            document.getElementById('cine-frame').src = "https://www.youtube.com/embed/videoseries?list=" + id + "&autoplay=1&rel=0";
+        function abrirCine(id) {
+            document.getElementById('menu-vibe').style.display = 'none';
+            document.getElementById('player-vibe').style.display = 'block';
+            // Link direto de vídeos públicos para evitar o bloqueio de "Este vídeo não está disponível"
+            document.getElementById('frame-vibe').src = "https://www.youtube.com/embed/videoseries?list=" + id + "&autoplay=1";
             if(window.tocarSom) tocarSom('clique');
         }
 
         function voltarNostalgia() {
-            if(document.getElementById('player-area').style.display === 'block') {
-                location.reload(); // Volta para a escolha
+            if(document.getElementById('player-vibe').style.display === 'block') {
+                location.reload(); 
             } else {
-                window.location.href = "index.html"; // Volta para o Chat
+                window.location.href = "index.html"; 
             }
         }
     </script>
