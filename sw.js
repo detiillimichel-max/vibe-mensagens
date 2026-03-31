@@ -1,29 +1,41 @@
-// VIBE OIO ONE - SERVICE WORKER 🔔
-self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => self.clients.claim());
+const CACHE_NAME = 'vibe-v1';
 
-// ✅ Notificação push
-self.addEventListener('push', e => {
-    const data = e.data ? e.data.json() : {};
-    e.waitUntil(
-        self.registration.showNotification(data.titulo || 'Vibe OIO ONE', {
-            body: data.corpo || 'Nova mensagem!',
-            icon: 'https://ui-avatars.com/api/?name=OIO&background=1a73e8&color=fff',
-            badge: 'https://ui-avatars.com/api/?name=OIO&background=1a73e8&color=fff',
-            vibrate: [300, 100, 300, 100, 300],
-            tag: 'vibe-msg',
-            renotify: true
-        })
-    );
+// Instalação e Cache
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(['./', './index.html', './manifest.json']);
+    })
+  );
+  self.skipWaiting();
 });
 
-// ✅ Clique na notificação abre o app
-self.addEventListener('notificationclick', e => {
-    e.notification.close();
-    e.waitUntil(
-        clients.matchAll({ type: 'window' }).then(lista => {
-            if (lista.length > 0) lista[0].focus();
-            else clients.openWindow('/');
-        })
-    );
+// Ativação
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+// ESCUTAR NOTIFICAÇÕES (O que falta para tocar no bloqueio)
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : { title: 'Nova Mensagem', body: 'Você recebeu um oi no Vibe!' };
+  
+  const options = {
+    body: data.body,
+    icon: './assets/icon-192x192.png', // Verifique se o caminho do seu ícone está certo
+    badge: './assets/icon-192x192.png',
+    vibrate: [200, 100, 200],
+    data: { url: './' }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Abrir o app ao clicar na notificação
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
 });
