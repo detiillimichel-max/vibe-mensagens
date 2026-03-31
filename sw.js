@@ -1,19 +1,14 @@
-// ================================================
-//  VIBE MENSAGENS — Service Worker (à prova de falhas)
-//  GitHub Pages: detiillimichel-max.github.io/vibe-mensagens
-// ================================================
-
 const CACHE_NAME = 'vibe-v1';
 
 const ARQUIVOS = [
-  '/vibe-mensagens/',
-  '/vibe-mensagens/index.html',
-  '/vibe-mensagens/css/style.css',
-  '/vibe-mensagens/js/script.js',
-  '/vibe-mensagens/app/ehub_logic.js',
-  '/vibe-mensagens/app/nostalgia.js',
-  '/vibe-mensagens/app/jogos.js',
-  '/vibe-mensagens/icons/icon-192.png'
+  './',
+  './index.html',
+  './css/style.css',
+  './js/script.js',
+  './app/ehub_logic.js',
+  './app/nostalgia.js',
+  './app/jogos.js',
+  './icons/icon-192.png'
 ];
 
 self.addEventListener('install', function(event) {
@@ -28,7 +23,7 @@ self.addEventListener('install', function(event) {
         })
       );
     }).catch(function(err) {
-      console.warn('[SW] Erro no install (não bloqueia):', err);
+      console.warn('[SW] Erro no install:', err);
     })
   );
 });
@@ -43,7 +38,7 @@ self.addEventListener('activate', function(event) {
     }).then(function() {
       return self.clients.claim();
     }).catch(function(err) {
-      console.warn('[SW] Erro no activate (não bloqueia):', err);
+      console.warn('[SW] Erro no activate:', err);
     })
   );
 });
@@ -77,12 +72,12 @@ self.addEventListener('fetch', function(event) {
       return cached || networkFetch.then(function(res) {
         if (res) return res;
         if (event.request.destination === 'document') {
-          return caches.match('/vibe-mensagens/index.html');
+          return caches.match('./index.html');
         }
       });
     }).catch(function() {
       if (event.request.destination === 'document') {
-        return caches.match('/vibe-mensagens/index.html');
+        return caches.match('./index.html');
       }
     })
   );
@@ -91,8 +86,8 @@ self.addEventListener('fetch', function(event) {
 self.addEventListener('push', function(event) {
   var titulo = 'Vibe Mensagens';
   var corpo  = 'Você tem uma nova mensagem! 💬';
-  var icone  = '/vibe-mensagens/icons/icon-192.png';
-  var url    = '/vibe-mensagens/';
+  var icone  = './icons/icon-192.png';
+  var url    = './';
 
   try {
     if (event.data) {
@@ -124,14 +119,14 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  var destino = '/vibe-mensagens/';
+  var destino = './';
   try { destino = event.notification.data.url || destino; } catch(e) {}
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(lista) {
       for (var i = 0; i < lista.length; i++) {
         var c = lista[i];
-        if (c.url.includes('/vibe-mensagens') && 'focus' in c) {
+        if (c.url.includes('vibe-mensagens') && 'focus' in c) {
           return c.focus();
         }
       }
@@ -146,6 +141,6 @@ self.addEventListener('pushsubscriptionchange', function(event) {
   event.waitUntil(
     self.registration.pushManager.subscribe({ userVisibleOnly: true })
       .then(function(sub) { console.log('[SW] Subscription renovada:', sub); })
-      .catch(function(err) { console.warn('[SW] Não renovou subscription:', err); })
+      .catch(function(err) { console.warn('[SW] Não renovou:', err); })
   );
 });
