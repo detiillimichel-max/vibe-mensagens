@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Vibe OIO">
-    <link rel="manifest" href="/vibe-mensagens/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <title>Vibe - OIO ONE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -71,7 +71,7 @@
 
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/vibe-mensagens/sw.js')
+            navigator.serviceWorker.register('./sw.js')
                 .then(function() { console.log('OIO: SW registrado'); })
                 .catch(function(e) { console.log('OIO: SW erro', e); });
         }
