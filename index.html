@@ -70,12 +70,25 @@
     <script src="app/jogos.js"></script>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(function() { console.log('OIO: SW registrado'); })
-                .catch(function(e) { console.log('OIO: SW erro', e); });
+        // ── PEDE PERMISSÃO DIRETO, SEM DEPENDER DO SW ──
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
 
+        // ── REGISTRA O SERVICE WORKER ──
+        var swReg = null;
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(function(reg) {
+                    swReg = reg;
+                    console.log('OIO: SW registrado');
+                })
+                .catch(function(e) {
+                    console.log('OIO: SW erro', e);
+                });
+        }
+
+        // ── SOM ──
         window.OioSom = {
             ctx: null,
             ativar: function() {
@@ -84,16 +97,14 @@
             tocar: function(notas) {
                 this.ativar();
                 notas.forEach(function(item) {
-                    var freq = item[0];
-                    var delay = item[1];
+                    var freq = item[0]; var delay = item[1];
                     var osc = window.OioSom.ctx.createOscillator();
                     var gain = window.OioSom.ctx.createGain();
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, window.OioSom.ctx.currentTime + delay);
                     gain.gain.setValueAtTime(0.5, window.OioSom.ctx.currentTime + delay);
                     gain.gain.exponentialRampToValueAtTime(0.001, window.OioSom.ctx.currentTime + delay + 0.3);
-                    osc.connect(gain);
-                    gain.connect(window.OioSom.ctx.destination);
+                    osc.connect(gain); gain.connect(window.OioSom.ctx.destination);
                     osc.start(window.OioSom.ctx.currentTime + delay);
                     osc.stop(window.OioSom.ctx.currentTime + delay + 0.4);
                 });
@@ -102,32 +113,26 @@
             clique: function() { this.tocar([[660,0],[880,0.15]]); }
         };
 
-        var swReg = null;
-        navigator.serviceWorker.ready.then(function(reg) {
-            swReg = reg;
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }).catch(function(e) {
-            console.warn('OIO: serviceWorker.ready erro', e);
-        });
-
+        // ── NOTIFICAÇÃO ──
         window.notificarVibe = function(titulo, corpo) {
             if (navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
             if (window.OioSom) window.OioSom.mensagem();
-            if (swReg && Notification.permission === 'granted') {
-                swReg.showNotification(titulo, {
-                    body: corpo,
-                    icon: 'https://ui-avatars.com/api/?name=OIO&background=1a73e8&color=fff',
-                    vibrate: [300,100,300,100,300],
-                    tag: 'vibe-' + Date.now(),
-                    renotify: true
-                });
+            if (Notification.permission === 'granted') {
+                var reg = swReg;
+                if (reg) {
+                    reg.showNotification(titulo, {
+                        body: corpo,
+                        icon: './icon-192-1.png',
+                        vibrate: [300,100,300,100,300],
+                        tag: 'vibe-' + Date.now(),
+                        renotify: true
+                    });
+                } else {
+                    new Notification(titulo, { body: corpo, icon: './icon-192-1.png' });
+                }
             }
         };
 
         document.addEventListener('touchstart', function() { window.OioSom.ativar(); }, { once: true });
         document.addEventListener('click', function() { window.OioSom.ativar(); }, { once: true });
     </script>
-</body>
-</html>
