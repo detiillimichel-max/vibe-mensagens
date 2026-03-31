@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vibe OIO">
+    <link rel="manifest" href="/manifest.json">
     <title>Vibe - OIO ONE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -35,11 +41,11 @@
                     <span>Google</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('toc_azul')">
-                    <i class="fa-solid fa-video" style="color: #007bff;"></i>
+                    <i class="fa-solid fa-video" style="color:#007bff;"></i>
                     <span>Toc Vídeos</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('jogos')">
-                    <i class="fa-solid fa-gamepad" style="color: #28a745;"></i>
+                    <i class="fa-solid fa-gamepad" style="color:#28a745;"></i>
                     <span>Jogos</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('prefeitura')">
@@ -47,20 +53,83 @@
                     <span>BJ Perdões</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('nostalgia')">
-                    <i class="fa-solid fa-tv" style="color: #ff9800;"></i>
+                    <i class="fa-solid fa-tv" style="color:#ff9800;"></i>
                     <span>Nostalgia</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <input type="file" id="fotoInput" style="display: none;" accept="image/*">
+    <input type="file" id="fotoInput" style="display:none;" accept="image/*">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="js/script.js"></script>
-    <script src="apps/ehub_logic.js"></script>
-    <script src="apps/nostalgia.js"></script>
-    <script src="apps/jogos.js"></script>
+    <script src="app/ehub_logic.js"></script>
+    <script src="app/nostalgia.js"></script>
+    <script src="app/jogos.js"></script>
+
+    <!-- ✅ PWA + NOTIFICAÇÕES NATIVAS -->
+    <script>
+        // Registra Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('OIO: SW registrado'))
+                .catch(e => console.log('OIO: SW erro', e));
+        }
+
+        // Sistema de som nativo alto
+        window.OioSom = {
+            ctx: null,
+            ativar() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            tocar(notas) {
+                this.ativar();
+                notas.forEach(([freq, delay]) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.5, this.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + delay);
+                    osc.stop(this.ctx.currentTime + delay + 0.4);
+                });
+            },
+            mensagem() { this.tocar([[880,0],[1100,0.2],[1320,0.4]]); },
+            clique() { this.tocar([[660,0],[880,0.15]]); }
+        };
+
+        // Pede permissão de notificação
+        let swReg = null;
+        navigator.serviceWorker.ready.then(reg => {
+            swReg = reg;
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        });
+
+        // Notificação nativa alta
+        window.notificarVibe = (titulo, corpo) => {
+            if (navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
+            window.OioSom?.mensagem();
+            if (swReg && Notification.permission === 'granted') {
+                swReg.showNotification(titulo, {
+                    body: corpo,
+                    icon: 'https://ui-avatars.com/api/?name=OIO&background=1a73e8&color=fff',
+                    vibrate: [300,100,300,100,300],
+                    tag: 'vibe-' + Date.now(),
+                    renotify: true
+                });
+            }
+        };
+
+        // Ativa som no primeiro toque
+        document.addEventListener('touchstart', () => window.OioSom.ativar(), { once: true });
+        document.addEventListener('click', () => window.OioSom.ativar(), { once: true });
+    </script>
 </body>
 </html>
