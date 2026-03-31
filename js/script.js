@@ -15,6 +15,7 @@ const db = firebase.database().ref("chat_vibe");
 
 // 3. Som e Recebimento
 const somPlim = new Audio('assets/sounds/vibe.mp3');
+let primeiraVez = true;
 
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
@@ -41,8 +42,18 @@ db.limitToLast(20).on("child_added", snap => {
     
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    if (m.autor !== nick) { somPlim.play().catch(() => {}); }
+
+    // Notifica apenas mensagens de outros usuários e ignora o carregamento inicial
+    if (m.autor !== nick && !primeiraVez) {
+        somPlim.play().catch(() => {});
+        if (typeof window.notificarVibe === 'function') {
+            window.notificarVibe('Vibe Mensagens 💬', m.autor + ': ' + (m.texto || (m.tipo === 'foto' ? '📷 Foto' : '🎤 Áudio')));
+        }
+    }
 });
+
+// Marca que o carregamento inicial terminou
+setTimeout(() => { primeiraVez = false; }, 2000);
 
 // 4. Funções de Envio
 function enviar() {
