@@ -1,0 +1,38 @@
+/* ARQUIVO: css/theme.css */
+body {
+    background-color: #000 !important;
+}
+
+#chat {
+    background-color: #000 !important;
+    padding-bottom: 80px;
+}
+
+/* Balões de Mensagem (Gabi e Michel) */
+[class*="gab"], [class*="detiillimichel"], .message-bubble {
+    border-radius: 18px !important;
+    background-color: #1a1a1a !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+    padding: 10px 15px !important;
+    margin: 8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+}
+
+/* Barra Inferior */
+.barra {
+    background: #0a0a0a !important;
+    border-top: 1px solid #222 !important;
+    padding: 10px !important;
+}
+
+#msgInput {
+    background: #1a1a1a !important;
+    border: 1px solid #444 !important;
+    border-radius: 20px !important;
+    color: #fff !important;
+}
+
+.icon {
+    color: #1a73e8 !important;
+}
