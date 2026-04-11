@@ -69,14 +69,13 @@
     <script src="app/ehub_logic.js"></script>
     <script src="app/nostalgia.js"></script>
     <script src="app/jogos.js"></script>
+    <script src="js/gemini-ai.js"></script>
 
     <script>
-        // ── PEDE PERMISSÃO DIRETO, SEM DEPENDER DO SW ──
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
 
-        // ── REGISTRA O SERVICE WORKER ──
         var swReg = null;
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
@@ -89,7 +88,6 @@
                 });
         }
 
-        // ── SOM ──
         window.OioSom = {
             ctx: null,
             ativar: function() {
@@ -114,7 +112,6 @@
             clique: function() { this.tocar([[660,0],[880,0.15]]); }
         };
 
-        // ── NOTIFICAÇÃO ──
         window.notificarVibe = function(titulo, corpo) {
             if (navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
             if (window.OioSom) window.OioSom.mensagem();
@@ -136,6 +133,25 @@
 
         document.addEventListener('touchstart', function() { window.OioSom.ativar(); }, { once: true });
         document.addEventListener('click', function() { window.OioSom.ativar(); }, { once: true });
+
+        // --- LÓGICA DE GATILHO DA IA (SEGURO PARA MOBILE) ---
+        const btnEnviarAI = document.getElementById('btnEnviar');
+        if (btnEnviarAI) {
+            btnEnviarAI.addEventListener('click', async () => {
+                const input = document.getElementById('msgInput');
+                const msg = input.value.trim();
+                
+                // Se a mensagem começar com "vibe", a IA responde
+                if (msg.toLowerCase().startsWith('vibe ')) {
+                    const pergunta = msg.substring(5);
+                    if (typeof obterRespostaIA === 'function') {
+                        const resposta = await obterRespostaIA(pergunta);
+                        // Exibe como notificação no app
+                        window.notificarVibe('OIO ONE Inteligência', resposta);
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
