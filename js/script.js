@@ -43,7 +43,6 @@ db.limitToLast(20).on("child_added", snap => {
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 
-    // Notifica apenas mensagens de outros usuários e ignora o carregamento inicial
     if (m.autor !== nick && !primeiraVez) {
         somPlim.play().catch(() => {});
         if (typeof window.notificarVibe === 'function') {
@@ -52,17 +51,34 @@ db.limitToLast(20).on("child_added", snap => {
     }
 });
 
-// Marca que o carregamento inicial terminou
 setTimeout(() => { primeiraVez = false; }, 2000);
 
-// 4. Funções de Envio
-function enviar() {
+// 4. Funções de Envio (ATUALIZADO COM IA)
+async function enviar() {
     const input = document.getElementById('msgInput');
-    if (input && input.value.trim() !== "") {
-        db.push({ autor: nick, texto: input.value, tipo: 'texto', data: Date.now() });
+    if (!input || input.value.trim() === "") return;
+
+    const texto = input.value.trim();
+
+    // Lógica da IA: Se começar com "vibe "
+    if (texto.toLowerCase().startsWith('vibe ')) {
+        const pergunta = texto.substring(5);
+        input.value = "Consultando a vibe...";
+        
+        if (typeof obterRespostaIA === 'function') {
+            const resposta = await obterRespostaIA(pergunta);
+            window.notificarVibe('OIO ONE IA', resposta);
+            // Opcional: Salvar a resposta da IA no chat para todos verem
+            db.push({ autor: "Vibe IA", texto: resposta, tipo: 'texto', data: Date.now() });
+        }
+        input.value = "";
+    } else {
+        // Envio normal para o Firebase
+        db.push({ autor: nick, texto: texto, tipo: 'texto', data: Date.now() });
         input.value = "";
     }
 }
+
 document.getElementById('btnEnviar').onclick = enviar;
 
 const btnFoto = document.getElementById('btnFoto');
