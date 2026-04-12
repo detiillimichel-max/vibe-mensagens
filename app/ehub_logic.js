@@ -1,19 +1,26 @@
-/* MAESTRO E-HUB COM SOM - OIO ONE */
+/* MAESTRO E-HUB COM SOM E LIGAÇÃO - OIO ONE */
 
-// 1. Definição dos sons
+// 1. Definição dos sons e Toque de Telefone
 const somClique = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
 const somSucesso = new Audio('https://www.soundjay.com/communication/sounds/beep-07.mp3');
+const somTelefone = new Audio('https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3');
+somTelefone.loop = true; // Faz o telefone ficar tocando sem parar
 
 function tocarSom(tipo) {
     if (tipo === 'clique') somClique.play().catch(() => {});
     if (tipo === 'sucesso') somSucesso.play().catch(() => {});
+    if (tipo === 'chamada') somTelefone.play().catch(() => {});
+}
+
+function pararToque() {
+    somTelefone.pause();
+    somTelefone.currentTime = 0;
 }
 
 // 2. Função principal de navegação
 function abrirAppHub(servico) {
     tocarSom('clique');
     
-    // Saltos Quânticos (HTMLs na Raiz)
     if (servico === 'toc_azul' || servico === 'videos') {
         window.location.href = "Toc-videos.html";
         return;
@@ -24,12 +31,17 @@ function abrirAppHub(servico) {
         return;
     }
 
-    // --- LÓGICA DE LIGAÇÃO DIRETA (VIDEO CALL) ---
+    // LÓGICA DE LIGAÇÃO DIRETA
     if (servico === 'video_call') {
-        const meuNome = localStorage.getItem("vibe_user") || "Michel";
+        // Pega o nome do usuário ou pergunta se não existir
+        let meuNome = localStorage.getItem("vibe_user");
+        if (!meuNome) {
+            meuNome = prompt("Como você quer aparecer na chamada?", "Michel");
+            localStorage.setItem("vibe_user", meuNome);
+        }
+
         const linkChamada = 'https://vibe-mensagens.daily.co/vibe';
 
-        // 1. Grava no Firebase que você está ligando para todos ouvirem
         firebase.database().ref("chamadas_ativas").set({
             quem_liga: meuNome,
             link: linkChamada,
@@ -37,13 +49,11 @@ function abrirAppHub(servico) {
             timestamp: Date.now()
         });
 
-        // 2. Abre a sua própria tela de vídeo
         window.open(linkChamada, '_blank');
         if (typeof fecharGaveta === "function") fecharGaveta();
         return;
     }
 
-    // Links Externos Restantes
     let links = {
         'google': 'https://www.google.com.br',
         'youtube': 'https://www.youtube.com',
@@ -51,7 +61,6 @@ function abrirAppHub(servico) {
         'prefeitura': 'https://www.bjperdoes.sp.gov.br',
         'cine': 'https://www.youtube.com/results?search_query=filmes+completos+dublados',
         'jogos': 'https://www.agame.com/game/dominoes-classic'
-        // video_call removido daqui e colocado na lógica acima
     };
 
     if (links[servico]) {
@@ -60,46 +69,46 @@ function abrirAppHub(servico) {
     }
 }
 
-// 3. Sistema de Galeria e Social
+// 3. Sistema de Galeria, Social e IA (Mantenha igual)
 function galeriaHub() {
     tocarSom('clique');
     const input = document.getElementById('fotoInput');
-    if(input) {
-        input.click();
-        if (typeof fecharGaveta === "function") fecharGaveta();
-    }
+    if(input) { input.click(); if (typeof fecharGaveta === "function") fecharGaveta(); }
 }
 
 function darLike(idItem) {
     const user = localStorage.getItem("vibe_user") || "Usuario";
     firebase.database().ref("social_vibe").child(idItem).child("likes").child(user).set(true);
     tocarSom('sucesso');
-    if(navigator.vibrate) navigator.vibrate(40);
 }
 
-// 4. Integração IA Gemini (Gatilho Seguro)
 function ativarIAVibe() {
     tocarSom('clique');
     window.geminiAtiva = true;
-    alert("Vibe IA Ativada! Digite sua pergunta e envie.");
-    if (typeof fecharGaveta === "function") fecharGaveta();
+    alert("Vibe IA Ativada! Digite sua pergunta.");
 }
 
-// --- OUVINTE DE CHAMADAS (O TOQUE DO TELEFONE) ---
-// Este código roda em segundo plano esperando alguém ligar
+// --- OUVINTE DE CHAMADAS COM SOM DE TOQUE ---
 firebase.database().ref("chamadas_ativas").on("value", (snapshot) => {
     const chamada = snapshot.val();
-    const meuNome = localStorage.getItem("vibe_user") || "Visitante";
+    const meuNome = localStorage.getItem("vibe_user");
 
-    // Se houver uma chamada ativa e NÃO fui eu que comecei
     if (chamada && chamada.status === "chamando" && chamada.quem_liga !== meuNome) {
-        tocarSom('sucesso'); // Toca um som para avisar
-        if (confirm(chamada.quem_liga + " está te ligando para vídeo. Aceitar?")) {
-            window.open(chamada.link, '_blank');
-            // Limpa o Firebase para a chamada encerrar
-            firebase.database().ref("chamadas_ativas").remove();
-        }
+        tocarSom('chamada'); // COMEÇA A TOCAR O TELEFONE
+        
+        setTimeout(() => { // Janela de confirmação
+            if (confirm("📞 CHAMADA DE VÍDEO: " + chamada.quem_liga + " está ligando. Aceitar?")) {
+                pararToque();
+                window.open(chamada.link, '_blank');
+                firebase.database().ref("chamadas_ativas").remove();
+            } else {
+                pararToque();
+                firebase.database().ref("chamadas_ativas").remove();
+            }
+        }, 500);
+    } else if (!chamada) {
+        pararToque(); // Para de tocar se a chamada for cancelada
     }
 });
 
-console.log("Maestro OIO ONE: Sistema de Ligação Direta Ativo!");
+console.log("Sistema Vibe: Toque e Identificação ativos!");
