@@ -1,6 +1,6 @@
-/* MAESTRO E-HUB COM SOM - OIO ONE 🚀 */
+/* MAESTRO E-HUB COM SOM - OIO ONE */
 
-// 1. Definição dos sons
+// 1. Definicao dos sons
 const somClique = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
 const somSucesso = new Audio('https://www.soundjay.com/communication/sounds/beep-07.mp3');
 
@@ -9,11 +9,11 @@ function tocarSom(tipo) {
     if (tipo === 'sucesso') somSucesso.play().catch(() => {});
 }
 
-// 2. Função principal de navegação
+// 2. Funcao principal de navegacao
 function abrirAppHub(servico) {
     tocarSom('clique');
     
-    // Saltos Quânticos (HTMLs na Raiz)
+    // Saltos Quanticos (HTMLs na Raiz)
     if (servico === 'toc_azul' || servico === 'videos') {
         window.location.href = "Toc-videos.html";
         return;
@@ -31,7 +31,8 @@ function abrirAppHub(servico) {
         'noticias': 'https://news.google.com',
         'prefeitura': 'https://www.bjperdoes.sp.gov.br',
         'cine': 'https://www.youtube.com/results?search_query=filmes+completos+dublados',
-        'jogos': 'https://www.agame.com/game/dominoes-classic'
+        'jogos': 'https://www.agame.com/game/dominoes-classic',
+        'video_call': 'https://vibe-mensagens.daily.co/vibe' 
     };
 
     if (links[servico]) {
@@ -51,10 +52,18 @@ function galeriaHub() {
 }
 
 function darLike(idItem) {
-    const user = localStorage.getItem("vibe_user") || "Usuário";
+    const user = localStorage.getItem("vibe_user") || "Usuario";
     firebase.database().ref("social_vibe").child(idItem).child("likes").child(user).set(true);
     tocarSom('sucesso');
     if(navigator.vibrate) navigator.vibrate(40);
 }
 
-console.log("✅ Maestro OIO ONE: Som e Navegação configurados!");
+// 4. Integracao IA Gemini (Gatilho Seguro)
+function ativarIAVibe() {
+    tocarSom('clique');
+    window.geminiAtiva = true;
+    alert("Vibe IA Ativada! Digite sua pergunta e envie.");
+    if (typeof fecharGaveta === "function") fecharGaveta();
+}
+
+console.log("Maestro OIO ONE: Som e Navegacao configurados!");
