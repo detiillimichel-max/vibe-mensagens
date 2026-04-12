@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/vibe-chat.css">
 </head>
 <body>
 
@@ -73,6 +74,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    
     <script src="js/script.js"></script>
     <script src="app/ehub_logic.js"></script>
     <script src="app/nostalgia.js"></script>
@@ -142,7 +144,6 @@
         document.addEventListener('touchstart', function() { window.OioSom.ativar(); }, { once: true });
         document.addEventListener('click', function() { window.OioSom.ativar(); }, { once: true });
 
-        // --- LÓGICA DE GATILHO DA IA (SEGURO PARA MOBILE) ---
         const btnEnviarAI = document.getElementById('btnEnviar');
         if (btnEnviarAI) {
             btnEnviarAI.addEventListener('click', async () => {
