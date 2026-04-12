@@ -43,7 +43,7 @@
                 </div>
                 <div class="app-item" onclick="abrirAppHub('toc_azul')">
                     <i class="fa-solid fa-video" style="color:#007bff;"></i>
-                    <span>Toc Vídeos</span>
+                    <span>Toc Videos</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('jogos')">
                     <i class="fa-solid fa-gamepad" style="color:#28a745;"></i>
@@ -51,11 +51,19 @@
                 </div>
                 <div class="app-item" onclick="abrirAppHub('prefeitura')">
                     <i class="fa-solid fa-city"></i>
-                    <span>BJ Perdões</span>
+                    <span>BJ Perdoes</span>
                 </div>
                 <div class="app-item" onclick="abrirAppHub('nostalgia')">
                     <i class="fa-solid fa-tv" style="color:#ff9800;"></i>
                     <span>Nostalgia</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('video_call')">
+                    <i class="fa-solid fa-video" style="color:#ff4b4b;"></i>
+                    <span>Video Call</span>
+                </div>
+                <div class="app-item" onclick="ativarIAVibe()">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:#00e5ff;"></i>
+                    <span>Vibe IA</span>
                 </div>
             </div>
         </div>
@@ -141,12 +149,11 @@
                 const input = document.getElementById('msgInput');
                 const msg = input.value.trim();
                 
-                // Se a mensagem começar com "vibe", a IA responde
-                if (msg.toLowerCase().startsWith('vibe ')) {
-                    const pergunta = msg.substring(5);
+                if (msg.toLowerCase().startsWith('vibe ') || window.geminiAtiva) {
+                    const pergunta = msg.toLowerCase().startsWith('vibe ') ? msg.substring(5) : msg;
+                    window.geminiAtiva = false;
                     if (typeof obterRespostaIA === 'function') {
                         const resposta = await obterRespostaIA(pergunta);
-                        // Exibe como notificação no app
                         window.notificarVibe('OIO ONE Inteligência', resposta);
                     }
                 }
