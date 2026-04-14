@@ -10,28 +10,74 @@ const firebaseConfig = {
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 
 const db = firebase.database().ref("chat_vibe");
-const dbDigitando = firebase.database().ref("digitando_vibe"); // Nova referência para o status de digitação
+const dbDigitando = firebase.database().ref("digitando_vibe");
+const dbUsuarios = firebase.database().ref("usuarios_vibe"); // Banco de dados para os avatares
 
 const somPlim = new Audio('assets/sounds/vibe.mp3');
 let primeiraVez = true;
+let avataresCache = {}; // Memória rápida para as fotos de perfil
 
-// 2. FUNÇÃO DE RENDERIZAÇÃO LUXURY (Atualizada para CSS Premium e Fotos)
+// 2. Lógica de Upload da Foto de Perfil (Invisível no HTML)
+const inputPerfil = document.createElement('input');
+inputPerfil.type = 'file';
+inputPerfil.accept = 'image/*';
+inputPerfil.style.display = 'none';
+document.body.appendChild(inputPerfil);
+
+inputPerfil.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target.result;
+            // Salva a nova foto no Firebase amarrada ao nome do usuário
+            dbUsuarios.child(nick).set({ foto: base64 });
+            if (typeof window.notificarVibe === 'function') {
+                window.notificarVibe('Vibe', 'Foto de perfil atualizada!');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+window.mudarFotoPerfil = function() {
+    inputPerfil.click(); // Abre a galeria ao clicar no próprio avatar
+};
+
+// Escuta as mudanças de fotos de perfil em tempo real
+dbUsuarios.on("value", snap => {
+    avataresCache = snap.val() || {};
+    // Atualiza todas as fotos que já estão na tela na mesma hora
+    document.querySelectorAll('.avatar-img').forEach(img => {
+        const autorMsg = img.getAttribute('data-autor');
+        if (avataresCache[autorMsg] && avataresCache[autorMsg].foto) {
+            img.src = avataresCache[autorMsg].foto;
+        }
+    });
+});
+
+// 3. FUNÇÃO DE RENDERIZAÇÃO LUXURY (Com Clique no Avatar)
 function renderizarVibe(m) {
     const isSent = m.autor === nick;
     const hora = new Date(m.data || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     
-    // Fallback: Gera a inicial se a foto não existir
+    // Procura no Firebase se a pessoa tem foto, senão usa as iniciais
+    const fotoSalva = avataresCache[m.autor] ? avataresCache[m.autor].foto : null;
     const avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
+    const srcFinal = fotoSalva || avatarFallback;
 
     let corpo = m.tipo === 'foto' ? `<img src="${m.imagem}" style="width:100%; border-radius:12px;">` :
                 m.tipo === 'audio' ? `<audio controls src="${m.audio}" style="width:100%;"></audio>` :
                 `<span>${m.texto}</span>`;
 
-    // Classes sincronizadas com vibe-chat.css
+    // Apenas o dono da mensagem pode clicar no avatar para trocar a foto
+    const acaoClique = isSent ? `onclick="window.mudarFotoPerfil()"` : '';
+    const estiloClique = isSent ? `cursor: pointer; border: 2px solid #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.5);` : '';
+
     return `
         <div class="mensagem-container ${isSent ? 'minha-mensagem' : ''}">
-            <div class="vibe-avatar">
-                <img src="assets/users/${m.autor.toLowerCase()}.jpg" onerror="this.src='${avatarFallback}'">
+            <div class="vibe-avatar" ${acaoClique} style="${estiloClique}" title="${isSent ? 'Mudar foto de perfil' : ''}">
+                <img src="${srcFinal}" class="avatar-img" data-autor="${m.autor}" onerror="this.src='${avatarFallback}'">
             </div>
             <div style="display:flex; flex-direction:column; max-width: 100%;">
                 <div class="bolha">${corpo}</div>
@@ -50,7 +96,6 @@ db.limitToLast(20).on("child_added", snap => {
     div.innerHTML = renderizarVibe(m);
     chat.appendChild(div);
     
-    // Garante que o indicador de digitação fique sempre por último
     const indicador = document.getElementById("typing-indicator-box");
     if(indicador) chat.appendChild(indicador);
     
@@ -65,7 +110,7 @@ db.limitToLast(20).on("child_added", snap => {
 });
 setTimeout(() => { primeiraVez = false; }, 2000);
 
-// 3. Lógica do "Escrevendo..." (Tempo Real)
+// 4. Lógica do "Escrevendo..."
 const inputMsg = document.getElementById('msgInput');
 let typingTimeout;
 
@@ -73,8 +118,6 @@ if (inputMsg) {
     inputMsg.addEventListener('input', () => {
         if (inputMsg.value.trim().length > 0) {
             dbDigitando.child(nick).set(true);
-            
-            // Limpa o status se parar de digitar por 3 segundos
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 dbDigitando.child(nick).remove();
@@ -85,7 +128,6 @@ if (inputMsg) {
     });
 }
 
-// Escutando quem está digitando
 dbDigitando.on("value", snap => {
     const digitando = snap.val();
     const chat = document.getElementById("chat");
@@ -99,7 +141,7 @@ dbDigitando.on("value", snap => {
             if (pessoa !== nick) {
                 alguemDigitando = true;
                 quem = pessoa;
-                break; // Mostra um por vez
+                break;
             }
         }
     }
@@ -112,11 +154,14 @@ dbDigitando.on("value", snap => {
     }
 
     if (alguemDigitando) {
+        const fotoDigitando = avataresCache[quem] ? avataresCache[quem].foto : null;
         const avatarTyping = `https://ui-avatars.com/api/?name=${quem}&background=1a73e8&color=fff&rounded=true`;
+        const srcFinal = fotoDigitando || avatarTyping;
+
         indicador.innerHTML = `
             <div class="mensagem-container" style="margin-top: 10px;">
                 <div class="vibe-avatar">
-                    <img src="assets/users/${quem.toLowerCase()}.jpg" onerror="this.src='${avatarTyping}'">
+                    <img src="${srcFinal}" class="avatar-img" data-autor="${quem}" onerror="this.src='${avatarTyping}'">
                 </div>
                 <div style="display:flex; flex-direction:column;">
                     <div class="bolha digitando-wrapper">
@@ -132,13 +177,12 @@ dbDigitando.on("value", snap => {
     }
 });
 
-// 4. Funções de Envio (Mensagens e IA)
+// 5. Funções de Envio
 async function enviar() {
     const input = document.getElementById('msgInput');
     const texto = input.value.trim();
     if (!texto) return;
 
-    // Remove status de digitando ao enviar
     dbDigitando.child(nick).remove();
     clearTimeout(typingTimeout);
 
@@ -157,7 +201,6 @@ async function enviar() {
 const btnEnviar = document.getElementById('btnEnviar');
 if(btnEnviar) btnEnviar.onclick = enviar;
 
-// Permitir envio com a tecla Enter
 if(inputMsg) {
     inputMsg.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -167,7 +210,7 @@ if(inputMsg) {
     });
 }
 
-// 5. Funções de Mídia (Foto e Áudio)
+// 6. Funções de Mídia (Foto e Áudio)
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
 if(btnFoto) btnFoto.onclick = () => fotoInput.click();
@@ -198,7 +241,7 @@ if(btnAudio) btnAudio.onclick = async () => {
     } else { mediaRecorder.stop(); btnAudio.style.color = "#1a73e8"; }
 };
 
-// 6. Controle da Gaveta e-Hub
+// 7. Controle da Gaveta e-Hub
 function abrirGaveta() { 
     const gaveta = document.getElementById('gaveta-ehub');
     if(gaveta) gaveta.classList.add('aberta'); 
