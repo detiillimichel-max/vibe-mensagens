@@ -14,6 +14,59 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/vibe-chat.css">
+
+    <style>
+        #vibe-overlay-molecular {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(11, 14, 17, 0.7); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        #vibe-overlay-molecular.ativo { opacity: 1; pointer-events: all; }
+
+        .molecula-container {
+            position: relative; width: 300px; height: 300px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* O Núcleo */
+        .molecula-centro {
+            width: 100px; height: 100px; border-radius: 50%; z-index: 10;
+            background: #101525; border: 2px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0,0,0,0.8);
+            object-fit: cover; cursor: pointer; transition: transform 0.2s;
+        }
+        .molecula-centro:active { transform: scale(0.92); box-shadow: 0 0 60px rgba(0, 229, 255, 0.5); }
+
+        /* Os Elétrons */
+        .eletron {
+            position: absolute; width: 55px; height: 55px;
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; color: #00e5ff; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+        .eletron:active { background: rgba(0, 229, 255, 0.15); border-color: #00e5ff; transform: scale(1.1); }
+
+        /* Posições sem linhas (130px de distância do centro) */
+        .el-1 { transform: rotate(0deg) translate(130px) rotate(0deg); }      /* Direita */
+        .el-2 { transform: rotate(60deg) translate(130px) rotate(-60deg); }   /* Baixo Dir */
+        .el-3 { transform: rotate(120deg) translate(130px) rotate(-120deg); } /* Baixo Esq */
+        .el-4 { transform: rotate(180deg) translate(130px) rotate(-180deg); } /* Esquerda */
+        .el-5 { transform: rotate(240deg) translate(130px) rotate(-240deg); } /* Cima Esq */
+        .el-6 { transform: rotate(300deg) translate(130px) rotate(-300deg); } /* Cima Dir */
+
+        /* Botão Flutuante (O "Átomo" que abre o menu) */
+        #btn-abrir-molecula {
+            position: fixed; bottom: 85px; right: 20px;
+            width: 55px; height: 55px; border-radius: 50%;
+            background: rgba(26, 115, 232, 0.9); backdrop-filter: blur(5px);
+            color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 9000; cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -25,6 +78,28 @@
         <input type="text" id="msgInput" placeholder="Sua vibe..." autocomplete="off">
         <i class="fa-solid fa-plus icon" onclick="abrirGaveta()"></i>
         <i class="fa-solid fa-paper-plane icon" id="btnEnviar"></i>
+    </div>
+
+    <button id="btn-abrir-molecula" onclick="abrirMolecula()">
+        <i class="fa-solid fa-atom"></i>
+    </button>
+
+    <div id="vibe-overlay-molecular" onclick="fecharMolecula(event)">
+        <div class="molecula-container">
+            <img id="img-nucleo" src="https://ui-avatars.com/api/?name=OIO&background=101525&color=fff" alt="Você" class="molecula-centro" onclick="alert('Seu Perfil Central!')">
+
+            <div class="eletron el-1" onclick="fecharMoleculaDireto()"><i class="fa-solid fa-comment-dots"></i></div>
+            
+            <div class="eletron el-2" onclick="fecharMoleculaDireto(); abrirGaveta();"><i class="fa-solid fa-layer-group"></i></div>
+            
+            <div class="eletron el-3" onclick="fecharMoleculaDireto(); galeriaHub();"><i class="fa-solid fa-images"></i></div>
+            
+            <div class="eletron el-4" onclick="fecharMoleculaDireto(); ativarIAVibe();"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            
+            <div class="eletron el-5" onclick="fecharMoleculaDireto(); abrirAppHub('video_call');"><i class="fa-solid fa-phone"></i></div>
+            
+            <div class="eletron el-6" onclick="fecharMoleculaDireto(); abrirAppHub('jogos');"><i class="fa-solid fa-gamepad"></i></div>
+        </div>
     </div>
 
     <div id="gaveta-ehub" class="gaveta-container">
@@ -82,6 +157,29 @@
     <script src="js/gemini-ai.js"></script>
 
     <script>
+        // Lógica da Interface Molecular
+        function abrirMolecula() {
+            document.getElementById('vibe-overlay-molecular').classList.add('ativo');
+            // Puxa a foto do usuário do localStorage se existir
+            const userNome = localStorage.getItem("vibe_user");
+            if(userNome) {
+                document.getElementById("img-nucleo").src = `https://ui-avatars.com/api/?name=${userNome}&background=101525&color=00e5ff`;
+            }
+        }
+
+        function fecharMolecula(event) {
+            // Fecha se clicar no fundo vazio (fora da molécula)
+            if (event.target.id === 'vibe-overlay-molecular') {
+                document.getElementById('vibe-overlay-molecular').classList.remove('ativo');
+            }
+        }
+
+        function fecharMoleculaDireto() {
+            // Função rápida para os botões fecharem a interface antes de abrirem o app
+            document.getElementById('vibe-overlay-molecular').classList.remove('ativo');
+        }
+
+        // --- SEUS SCRIPTS ORIGINAIS INTACTOS ABAIXO ---
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
