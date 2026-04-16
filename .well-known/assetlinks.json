@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.vibe.app",
+        "sha256_cert_fingerprints": ["03:0E:34:B1:68:CA:DD:29:6F:8A:C6:AF:CE:23:67:2F:0E:87:FC:47:9C:3D:CF:3B:05:FD:D7:73:7B:E9:9E:BB"]
+      }
+    }]
