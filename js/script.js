@@ -1,253 +1,148 @@
-// 1. Verificação e Firebase
-let nick = localStorage.getItem("vibe_user");
-if (!nick) window.location.href = "login.html";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vibe OIO">
+    <link rel="manifest" href="./manifest.json">
+    <title>Vibe - OIO ONE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/vibe-chat.css">
+</head>
+<body>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAslIIn6h6NdVhuHdwXjS1EhAbItrAXq7Y",
-    databaseURL: "https://vibe-app-bbba2-default-rtdb.firebaseio.com/",
-    projectId: "vibe-app-bbba2"
-};
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    <div id="chat"></div>
 
-const db = firebase.database().ref("chat_vibe");
-const dbDigitando = firebase.database().ref("digitando_vibe");
-const dbUsuarios = firebase.database().ref("usuarios_vibe"); // Banco de dados para os avatares
+    <div class="barra">
+        <i class="fa-solid fa-camera icon" id="btnFoto"></i>
+        <i class="fa-solid fa-microphone icon" id="btnAudio"></i>
+        <input type="text" id="msgInput" placeholder="Sua vibe..." autocomplete="off">
+        <i class="fa-solid fa-plus icon" onclick="abrirGaveta()"></i>
+        <i class="fa-solid fa-paper-plane icon" id="btnEnviar"></i>
+    </div>
 
-const somPlim = new Audio('assets/sounds/vibe.mp3');
-let primeiraVez = true;
-let avataresCache = {}; // Memória rápida para as fotos de perfil
-
-// 2. Lógica de Upload da Foto de Perfil (Invisível no HTML)
-const inputPerfil = document.createElement('input');
-inputPerfil.type = 'file';
-inputPerfil.accept = 'image/*';
-inputPerfil.style.display = 'none';
-document.body.appendChild(inputPerfil);
-
-inputPerfil.onchange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const base64 = event.target.result;
-            // Salva a nova foto no Firebase amarrada ao nome do usuário
-            dbUsuarios.child(nick).set({ foto: base64 });
-            if (typeof window.notificarVibe === 'function') {
-                window.notificarVibe('Vibe', 'Foto de perfil atualizada!');
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
-window.mudarFotoPerfil = function() {
-    inputPerfil.click(); // Abre a galeria ao clicar no próprio avatar
-};
-
-// Escuta as mudanças de fotos de perfil em tempo real
-dbUsuarios.on("value", snap => {
-    avataresCache = snap.val() || {};
-    // Atualiza todas as fotos que já estão na tela na mesma hora
-    document.querySelectorAll('.avatar-img').forEach(img => {
-        const autorMsg = img.getAttribute('data-autor');
-        if (avataresCache[autorMsg] && avataresCache[autorMsg].foto) {
-            img.src = avataresCache[autorMsg].foto;
-        }
-    });
-});
-
-// 3. FUNÇÃO DE RENDERIZAÇÃO LUXURY (Com Clique no Avatar)
-function renderizarVibe(m) {
-    const isSent = m.autor === nick;
-    const hora = new Date(m.data || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    
-    // Procura no Firebase se a pessoa tem foto, senão usa as iniciais
-    const fotoSalva = avataresCache[m.autor] ? avataresCache[m.autor].foto : null;
-    const avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
-    const srcFinal = fotoSalva || avatarFallback;
-
-    let corpo = m.tipo === 'foto' ? `<img src="${m.imagem}" style="width:100%; border-radius:12px;">` :
-                m.tipo === 'audio' ? `<audio controls src="${m.audio}" style="width:100%;"></audio>` :
-                `<span>${m.texto}</span>`;
-
-    // Apenas o dono da mensagem pode clicar no avatar para trocar a foto
-    const acaoClique = isSent ? `onclick="window.mudarFotoPerfil()"` : '';
-    const estiloClique = isSent ? `cursor: pointer; border: 2px solid #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.5);` : '';
-
-    return `
-        <div class="mensagem-container ${isSent ? 'minha-mensagem' : ''}">
-            <div class="vibe-avatar" ${acaoClique} style="${estiloClique}" title="${isSent ? 'Mudar foto de perfil' : ''}">
-                <img src="${srcFinal}" class="avatar-img" data-autor="${m.autor}" onerror="this.src='${avatarFallback}'">
-            </div>
-            <div style="display:flex; flex-direction:column; max-width: 100%;">
-                <div class="bolha">${corpo}</div>
-                <span class="info-msg">${isSent ? '' : '<strong>'+m.autor+'</strong> • '} ${hora}</span>
+    <div id="gaveta-ehub" class="gaveta-container">
+        <div class="handle-area" onclick="fecharGaveta()">
+            <div class="handle-bar"></div>
+        </div>
+        <div class="gaveta-content">
+            <h3 style="color:#1a73e8; margin-bottom:20px;">e-Hub OIO ONE</h3>
+            <div class="grid-apps">
+                <div class="app-item" onclick="galeriaHub()">
+                    <i class="fa-solid fa-images"></i>
+                    <span>Galeria</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('google')">
+                    <i class="fa-brands fa-google"></i>
+                    <span>Google</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('toc_azul')">
+                    <i class="fa-solid fa-video" style="color:#007bff;"></i>
+                    <span>Toc Videos</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('jogos')">
+                    <i class="fa-solid fa-gamepad" style="color:#28a745;"></i>
+                    <span>Jogos</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('prefeitura')">
+                    <i class="fa-solid fa-city"></i>
+                    <span>BJ Perdoes</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('nostalgia')">
+                    <i class="fa-solid fa-tv" style="color:#ff9800;"></i>
+                    <span>Nostalgia</span>
+                </div>
+                <div class="app-item" onclick="abrirAppHub('video_call')">
+                    <i class="fa-solid fa-video" style="color:#ff4b4b;"></i>
+                    <span>Video Call</span>
+                </div>
+                <div class="app-item" onclick="ativarIAVibe()">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:#00e5ff;"></i>
+                    <span>Vibe IA</span>
+                </div>
             </div>
         </div>
-    `;
-}
+    </div>
 
-db.limitToLast(20).on("child_added", snap => {
-    const m = snap.val();
-    const chat = document.getElementById("chat");
-    if(!chat) return;
+    <input type="file" id="fotoInput" style="display:none;" accept="image/*">
 
-    const div = document.createElement("div");
-    div.innerHTML = renderizarVibe(m);
-    chat.appendChild(div);
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     
-    const indicador = document.getElementById("typing-indicator-box");
-    if(indicador) chat.appendChild(indicador);
-    
-    chat.scrollTop = chat.scrollHeight;
+    <script src="js/script.js"></script>
+    <script src="app/ehub_logic.js"></script>
+    <script src="app/nostalgia.js"></script>
+    <script src="app/jogos.js"></script>
+    <script src="js/gemini-ai.js"></script>
 
-    if (m.autor !== nick && !primeiraVez) {
-        somPlim.play().catch(() => {});
-        if (typeof window.notificarVibe === 'function') {
-            window.notificarVibe('Vibe 💬', m.autor + ': ' + (m.texto || 'Enviou mídia'));
+    <script>
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
-    }
-});
-setTimeout(() => { primeiraVez = false; }, 2000);
 
-// 4. Lógica do "Escrevendo..."
-const inputMsg = document.getElementById('msgInput');
-let typingTimeout;
-
-if (inputMsg) {
-    inputMsg.addEventListener('input', () => {
-        if (inputMsg.value.trim().length > 0) {
-            dbDigitando.child(nick).set(true);
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                dbDigitando.child(nick).remove();
-            }, 3000);
-        } else {
-            dbDigitando.child(nick).remove();
+        var swReg = null;
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(function(reg) {
+                    swReg = reg;
+                    console.log('OIO: SW registrado');
+                })
+                .catch(function(e) {
+                    console.log('OIO: SW erro', e);
+                });
         }
-    });
-}
 
-dbDigitando.on("value", snap => {
-    const digitando = snap.val();
-    const chat = document.getElementById("chat");
-    if (!chat) return;
-
-    let alguemDigitando = false;
-    let quem = "";
-
-    if (digitando) {
-        for (let pessoa in digitando) {
-            if (pessoa !== nick) {
-                alguemDigitando = true;
-                quem = pessoa;
-                break;
-            }
-        }
-    }
-
-    let indicador = document.getElementById("typing-indicator-box");
-    if (!indicador) {
-        indicador = document.createElement("div");
-        indicador.id = "typing-indicator-box";
-        chat.appendChild(indicador);
-    }
-
-    if (alguemDigitando) {
-        const fotoDigitando = avataresCache[quem] ? avataresCache[quem].foto : null;
-        const avatarTyping = `https://ui-avatars.com/api/?name=${quem}&background=1a73e8&color=fff&rounded=true`;
-        const srcFinal = fotoDigitando || avatarTyping;
-
-        indicador.innerHTML = `
-            <div class="mensagem-container" style="margin-top: 10px;">
-                <div class="vibe-avatar">
-                    <img src="${srcFinal}" class="avatar-img" data-autor="${quem}" onerror="this.src='${avatarTyping}'">
-                </div>
-                <div style="display:flex; flex-direction:column;">
-                    <div class="bolha digitando-wrapper">
-                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        indicador.style.display = "flex";
-        chat.scrollTop = chat.scrollHeight;
-    } else {
-        indicador.style.display = "none";
-    }
-});
-
-// 5. Funções de Envio
-async function enviar() {
-    const input = document.getElementById('msgInput');
-    const texto = input.value.trim();
-    if (!texto) return;
-
-    dbDigitando.child(nick).remove();
-    clearTimeout(typingTimeout);
-
-    if (texto.toLowerCase().startsWith('vibe ')) {
-        const pergunta = texto.substring(5);
-        input.value = "Consultando...";
-        if (typeof obterRespostaIA === 'function') {
-            const resposta = await obterRespostaIA(pergunta);
-            db.push({ autor: "Vibe IA", texto: resposta, tipo: 'texto', data: Date.now() });
-        }
-    } else {
-        db.push({ autor: nick, texto: texto, tipo: 'texto', data: Date.now() });
-    }
-    input.value = "";
-}
-const btnEnviar = document.getElementById('btnEnviar');
-if(btnEnviar) btnEnviar.onclick = enviar;
-
-if(inputMsg) {
-    inputMsg.addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            enviar();
-        }
-    });
-}
-
-// 6. Funções de Mídia (Foto e Áudio)
-const btnFoto = document.getElementById('btnFoto');
-const fotoInput = document.getElementById('fotoInput');
-if(btnFoto) btnFoto.onclick = () => fotoInput.click();
-if(fotoInput) fotoInput.onchange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => { db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() }); };
-        reader.readAsDataURL(file);
-    }
-};
-
-let mediaRecorder; let audioChunks = [];
-const btnAudio = document.getElementById('btnAudio');
-if(btnAudio) btnAudio.onclick = async () => {
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.onload = (event) => { db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() }); };
-            reader.readAsDataURL(audioBlob);
+        window.OioSom = {
+            ctx: null,
+            ativar: function() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            tocar: function(notas) {
+                this.ativar();
+                notas.forEach(function(item) {
+                    var freq = item[0]; var delay = item[1];
+                    var osc = window.OioSom.ctx.createOscillator();
+                    var gain = window.OioSom.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, window.OioSom.ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.5, window.OioSom.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, window.OioSom.ctx.currentTime + delay + 0.3);
+                    osc.connect(gain); gain.connect(window.OioSom.ctx.destination);
+                    osc.start(window.OioSom.ctx.currentTime + delay);
+                    osc.stop(window.OioSom.ctx.currentTime + delay + 0.4);
+                });
+            },
+            mensagem: function() { this.tocar([[880,0],[1100,0.2],[1320,0.4]]); },
+            clique: function() { this.tocar([[660,0],[880,0.15]]); }
         };
-        mediaRecorder.start(); btnAudio.style.color = "red"; 
-    } else { mediaRecorder.stop(); btnAudio.style.color = "#1a73e8"; }
-};
 
-// 7. Controle da Gaveta e-Hub
-function abrirGaveta() { 
-    const gaveta = document.getElementById('gaveta-ehub');
-    if(gaveta) gaveta.classList.add('aberta'); 
-    if(navigator.vibrate) navigator.vibrate(30);
-}
-function fecharGaveta() { 
-    const gaveta = document.getElementById('gaveta-ehub');
-    if(gaveta) gaveta.classList.remove('aberta'); 
-}
+        window.notificarVibe = function(titulo, corpo) {
+            if (navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
+            if (window.OioSom) window.OioSom.mensagem();
+            if (Notification.permission === 'granted') {
+                var reg = swReg;
+                if (reg) {
+                    reg.showNotification(titulo, {
+                        body: corpo,
+                        icon: './icon-192-1.png',
+                        vibrate: [300,100,300,100,300],
+                        tag: 'vibe-' + Date.now(),
+                        renotify: true
+                    });
+                } else {
+                    new Notification(titulo, { body: corpo, icon: './icon-192-1.png' });
+                }
+            }
+        };
+
+        document.addEventListener('touchstart', function() { window.OioSom.ativar(); }, { once: true });
+        document.addEventListener('click', function() { window.OioSom.ativar(); }, { once: true });
+    </script>
+</body>
+</html>
