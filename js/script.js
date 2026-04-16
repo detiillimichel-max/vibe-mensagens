@@ -1,4 +1,4 @@
-// 1. Verificação e Firebase
+// 1. Verificação e Firebase (Mantenha igual)
 let nick = localStorage.getItem("vibe_user");
 if (!nick) window.location.href = "login.html";
 
@@ -10,14 +10,13 @@ const firebaseConfig = {
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 
 const db = firebase.database().ref("chat_vibe");
-const dbDigitando = firebase.database().ref("digitando_vibe");
-const dbUsuarios = firebase.database().ref("usuarios_vibe");
+const dbUsuarios = firebase.database().ref("usuarios_vibe"); // Banco de dados para os avatares
 
 const somPlim = new Audio('assets/sounds/vibe.mp3');
 let primeiraVez = true;
-let avataresCache = {};
+let avataresCache = {}; // Memória rápida para as fotos de perfil
 
-// 2. Lógica de Upload da Foto de Perfil
+// 2. Lógica de Upload da Foto de Perfil (Invisível no HTML)
 const inputPerfil = document.createElement('input');
 inputPerfil.type = 'file';
 inputPerfil.accept = 'image/*';
@@ -30,7 +29,8 @@ inputPerfil.onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (event) => {
             const base64 = event.target.result;
-            dbUsuarios.child(nick).set({ foto: base64 }).catch(()=>{});
+            // Salva a nova foto no Firebase amarrada ao nome do usuário
+            dbUsuarios.child(nick).set({ foto: base64 });
             if (typeof window.notificarVibe === 'function') {
                 window.notificarVibe('Vibe', 'Foto de perfil atualizada!');
             }
@@ -40,11 +40,13 @@ inputPerfil.onchange = (e) => {
 };
 
 window.mudarFotoPerfil = function() {
-    inputPerfil.click();
+    inputPerfil.click(); // Abre a galeria ao clicar no próprio avatar
 };
 
+// Escuta as mudanças de fotos de perfil em tempo real
 dbUsuarios.on("value", snap => {
     avataresCache = snap.val() || {};
+    // Atualiza todas as fotos que já estão na tela na mesma hora
     document.querySelectorAll('.avatar-img').forEach(img => {
         const autorMsg = img.getAttribute('data-autor');
         if (avataresCache[autorMsg] && avataresCache[autorMsg].foto) {
@@ -53,11 +55,12 @@ dbUsuarios.on("value", snap => {
     });
 });
 
-// 3. FUNÇÃO DE RENDERIZAÇÃO LUXURY
+// 3. FUNÇÃO DE RENDERIZAÇÃO LUXURY (Com Clique no Avatar)
 function renderizarVibe(m) {
     const isSent = m.autor === nick;
     const hora = new Date(m.data || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     
+    // Procura no Firebase se a pessoa tem foto, senão usa as iniciais
     const fotoSalva = avataresCache[m.autor] ? avataresCache[m.autor].foto : null;
     const avatarFallback = `https://ui-avatars.com/api/?name=${m.autor}&background=1a73e8&color=fff&rounded=true`;
     const srcFinal = fotoSalva || avatarFallback;
@@ -66,6 +69,7 @@ function renderizarVibe(m) {
                 m.tipo === 'audio' ? `<audio controls src="${m.audio}" style="width:100%;"></audio>` :
                 `<span>${m.texto}</span>`;
 
+    // Apenas o dono da mensagem pode clicar no avatar para trocar a foto
     const acaoClique = isSent ? `onclick="window.mudarFotoPerfil()"` : '';
     const estiloClique = isSent ? `cursor: pointer; border: 2px solid #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.5);` : '';
 
@@ -82,20 +86,21 @@ function renderizarVibe(m) {
     `;
 }
 
+// 4. Recebimento de Mensagens (Ouvir Banco em Tempo Real)
 db.limitToLast(20).on("child_added", snap => {
     const m = snap.val();
     const chat = document.getElementById("chat");
     if(!chat) return;
 
+    // Adiciona a mensagem formatada ao chat
     const div = document.createElement("div");
     div.innerHTML = renderizarVibe(m);
     chat.appendChild(div);
     
-    const indicador = document.getElementById("typing-indicator-box");
-    if(indicador) chat.appendChild(indicador);
-    
+    // Auto-scroll para baixo
     chat.scrollTop = chat.scrollHeight;
 
+    // Toca som se for de outra pessoa
     if (m.autor !== nick && !primeiraVez) {
         somPlim.play().catch(() => {});
         if (typeof window.notificarVibe === 'function') {
@@ -105,103 +110,31 @@ db.limitToLast(20).on("child_added", snap => {
 });
 setTimeout(() => { primeiraVez = false; }, 2000);
 
-// 4. Lógica do "Escrevendo..." BLINDADA
-const inputMsg = document.getElementById('msgInput');
-let typingTimeout;
-
-if (inputMsg) {
-    inputMsg.addEventListener('input', () => {
-        if (inputMsg.value.trim().length > 0) {
-            try { dbDigitando.child(nick).set(true).catch(()=>{}); } catch(e){}
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                try { dbDigitando.child(nick).remove().catch(()=>{}); } catch(e){}
-            }, 3000);
-        } else {
-            try { dbDigitando.child(nick).remove().catch(()=>{}); } catch(e){}
-        }
-    });
-}
-
-dbDigitando.on("value", snap => {
-    const digitando = snap.val();
-    const chat = document.getElementById("chat");
-    if (!chat) return;
-
-    let alguemDigitando = false;
-    let quem = "";
-
-    if (digitando) {
-        for (let pessoa in digitando) {
-            if (pessoa !== nick) {
-                alguemDigitando = true;
-                quem = pessoa;
-                break;
-            }
-        }
-    }
-
-    let indicador = document.getElementById("typing-indicator-box");
-    if (!indicador) {
-        indicador = document.createElement("div");
-        indicador.id = "typing-indicator-box";
-        chat.appendChild(indicador);
-    }
-
-    if (alguemDigitando) {
-        const fotoDigitando = avataresCache[quem] ? avataresCache[quem].foto : null;
-        const avatarTyping = `https://ui-avatars.com/api/?name=${quem}&background=1a73e8&color=fff&rounded=true`;
-        const srcFinal = fotoDigitando || avatarTyping;
-
-        indicador.innerHTML = `
-            <div class="mensagem-container" style="margin-top: 10px;">
-                <div class="vibe-avatar">
-                    <img src="${srcFinal}" class="avatar-img" data-autor="${quem}" onerror="this.src='${avatarTyping}'">
-                </div>
-                <div style="display:flex; flex-direction:column;">
-                    <div class="bolha digitando-wrapper">
-                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        indicador.style.display = "flex";
-        chat.scrollTop = chat.scrollHeight;
-    } else {
-        indicador.style.display = "none";
-    }
-});
-
-// 5. Funções de Envio - CORRIGIDAS E PROTEGIDAS
+// 5. Funções de Envio (Mantenha sua Lógica de IA)
 async function enviar() {
     const input = document.getElementById('msgInput');
     const texto = input.value.trim();
     if (!texto) return;
 
-    // Tenta remover o digitando, mas SE FALHAR, IGNORA E CONTINUA!
-    try { 
-        dbDigitando.child(nick).remove().catch(()=>{}); 
-    } catch(e) { console.log("Erro no digitando ignorado"); }
-    
-    clearTimeout(typingTimeout);
-
     if (texto.toLowerCase().startsWith('vibe ')) {
         const pergunta = texto.substring(5);
-        input.value = "Consultando...";
+        input.value = "Consultando a vibe...";
         if (typeof obterRespostaIA === 'function') {
             const resposta = await obterRespostaIA(pergunta);
-            db.push({ autor: "Vibe IA", texto: resposta, tipo: 'texto', data: Date.now() }).catch(()=>{});
+            db.push({ autor: "Vibe IA", texto: resposta, tipo: 'texto', data: Date.now() });
         }
+        input.value = "";
     } else {
-        // Envia a mensagem com .catch para não quebrar a aplicação
-        db.push({ autor: nick, texto: texto, tipo: 'texto', data: Date.now() }).catch(()=>{});
+        // Envio normal com som de clique (Opcional)
+        // somPlim.play().catch(()=>{}); 
+        db.push({ autor: nick, texto: texto, tipo: 'texto', data: Date.now() });
+        input.value = "";
     }
-    input.value = "";
 }
-
 const btnEnviar = document.getElementById('btnEnviar');
 if(btnEnviar) btnEnviar.onclick = enviar;
 
+const inputMsg = document.getElementById('msgInput');
 if(inputMsg) {
     inputMsg.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -211,7 +144,7 @@ if(inputMsg) {
     });
 }
 
-// 6. Funções de Mídia (Foto e Áudio)
+// 6. Funções de Mídia (Mantenha as Originais)
 const btnFoto = document.getElementById('btnFoto');
 const fotoInput = document.getElementById('fotoInput');
 if(btnFoto) btnFoto.onclick = () => fotoInput.click();
@@ -219,9 +152,7 @@ if(fotoInput) fotoInput.onchange = (e) => {
     const file = e.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (event) => { 
-            db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() }).catch(()=>{}); 
-        };
+        reader.onload = (event) => { db.push({ autor: nick, imagem: event.target.result, tipo: 'foto', data: Date.now() }); };
         reader.readAsDataURL(file);
     }
 };
@@ -237,9 +168,7 @@ if(btnAudio) btnAudio.onclick = async () => {
         mediaRecorder.onstop = () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             const reader = new FileReader();
-            reader.onload = (event) => { 
-                db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() }).catch(()=>{}); 
-            };
+            reader.onload = (event) => { db.push({ autor: nick, audio: event.target.result, tipo: 'audio', data: Date.now() }); };
             reader.readAsDataURL(audioBlob);
         };
         mediaRecorder.start(); btnAudio.style.color = "red"; 
