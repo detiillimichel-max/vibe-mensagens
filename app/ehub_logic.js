@@ -1,9 +1,9 @@
 /* MAESTRO E-HUB COM SOM E LIGAÇÃO - OIO ONE */
 
-// 1. Definição dos sons e Toque de Telefone
-const somClique = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-const somSucesso = new Audio('https://www.soundjay.com/communication/sounds/beep-07.mp3');
-const somTelefone = new Audio('https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3');
+// 1. Definição dos sons e Toque de Telefone (Servidores Oficiais do Google)
+const somClique = new Audio('https://actions.google.com/sounds/v1/office/button_push.ogg');
+const somSucesso = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
+const somTelefone = new Audio('https://actions.google.com/sounds/v1/alarms/phone_alerts_and_rings.ogg');
 somTelefone.loop = true; // Faz o telefone ficar tocando sem parar
 
 function tocarSom(tipo) {
