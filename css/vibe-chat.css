@@ -111,3 +111,14 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Forçando o Chrome e o App a mostrar o player de áudio completo */
+audio {
+    min-width: 240px !important;
+    height: 45px !important;
+    border-radius: 30px !important;
+    outline: none !important;
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: #ffffff !important;
+}
