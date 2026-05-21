@@ -14,8 +14,16 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/vibe-chat.css">
+    <link rel="stylesheet" href="css/splash-motorola.css">
 </head>
 <body>
+
+    <div id="splash-screen">
+        <div class="splash-circle">
+            <div class="splash-liquid-bg"></div>
+            <div class="splash-logo">VIBE</div>
+        </div>
+    </div>
 
     <div id="chat"></div>
 
@@ -80,6 +88,7 @@
     <script src="app/nostalgia.js"></script>
     <script src="app/jogos.js"></script>
     <script src="js/gemini-ai.js"></script>
+    <script src="js/splash-control.js"></script>
 
     <script>
         if ('Notification' in window && Notification.permission === 'default') {
@@ -118,8 +127,8 @@
                     osc.stop(window.OioSom.ctx.currentTime + delay + 0.4);
                 });
             },
-            mensagem: function() { this.tocar(880,0],[1100,0.2],[1320,0.4); },
-            clique: function() { this.tocar(660,0],[880,0.15); }
+            mensagem: function() { this.tocar([[880,0],[1100,0.2],[1320,0.4]]); },
+            clique: function() { this.tocar([[660,0],[880,0.15]]); }
         };
 
         window.notificarVibe = function(titulo, corpo) {
