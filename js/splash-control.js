@@ -1,47 +1,90 @@
 document.addEventListener("DOMContentLoaded", function() {
     const splash = document.getElementById("splash-screen");
-    if (splash) {
-        
-        // --- MARCO DE 1.0 SEGUNDO ---
+    const logo = document.querySelector(".splash-logo");
+    const circle = document.querySelector(".splash-circle");
+    
+    if (splash && logo && circle) {
+        let chips = [];
+
+        // --- 1.0 SEGUNDO: O VIBE SE DESINTEGRA ---
         setTimeout(function() {
-            console.log("OIO: 1.0s - Disparando primeira onda de brilho");
-            // Aqui você pode adicionar classes CSS ou tocar sons curtos
+            logo.classList.add("logo-disintegrate");
         }, 1000);
 
-        // --- MARCO DE 1.5 SEGUNDOS ---
+        // --- 1.5 SEGUNDOS: VIRANDO PROCESSADORES ANDANDO PELA TELA ---
         setTimeout(function() {
-            console.log("OIO: 1.5s - Distorção do gradiente em andamento");
+            // Criamos 8 processadores simulados na física do círculo
+            for (let i = 0; i < 8; i++) {
+                const chip = document.createElement("div");
+                chip.className = "processor-chip";
+                circle.appendChild(chip);
+                chips.push(chip);
+                
+                // Espalha eles em posições aleatórias "andando" pelo espaço interno
+                const randomX = (Math.random() - 0.5) * 100;
+                const randomY = (Math.random() - 0.5) * 100;
+                
+                // Força o navegador a processar o estado antes de aplicar o estilo
+                void chip.offsetWidth; 
+                
+                chip.style.opacity = "1";
+                chip.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${Math.random() * 360}deg)`;
+            }
         }, 1500);
 
-        // --- MARCO DE 2.0 SEGUNDOS ---
+        // --- 2.0 SEGUNDOS: TODOS CONVERGEM NO CENTRO EXATO ---
         setTimeout(function() {
-            console.log("OIO: 2.0s - Logo atinge o tamanho e brilho máximo");
+            chips.forEach(chip => {
+                chip.style.transform = "translate(0px, 0px) scale(1.2)";
+                chip.style.background = "#7928ca"; // Muda de cor na compressão
+                chip.style.boxShadow = "0 0 15px #7928ca";
+            });
         }, 2000);
 
-        // --- MARCO DE 2.5 SEGUNDOS ---
+        // --- 2.5 SEGUNDOS: EXPANSÃO RADIAL 360 GRAUS PARA AS BORDAS ---
         setTimeout(function() {
-            console.log("OIO: 2.5s - Preparando estabilização visual");
+            chips.forEach((chip, index) => {
+                // Divide o círculo perfeitamente em 8 direções (360 / 8 = 45 graus cada)
+                const angle = (index * 45) * (Math.PI / 180);
+                const radius = 68; // Distância empurrando quase na borda do círculo de 170px
+                const borderX = Math.cos(angle) * radius;
+                const borderY = Math.sin(angle) * radius;
+                
+                chip.style.background = "#ff4b4b"; // Cor de impacto na borda
+                chip.style.boxShadow = "0 0 20px #ff4b4b";
+                chip.style.transform = `translate(${borderX}px, ${borderY}px) rotate(${index * 45}deg) scale(0.8)`;
+            });
         }, 2500);
 
-        // --- MARCO DE 3.0 SEGUNDOS ---
-        // Iniciamos o desvanecimento (fade-out) suave da cortina preta aqui
+        // --- 3.0 SEGUNDOS: FINALIZANDO A CHEGADA NAS BORDAS (PULSO ESTÁTICO) ---
         setTimeout(function() {
-            console.log("OIO: 3.0s - Cortina preta começa a sumir suavemente");
-            splash.classList.add("splash-fade-out");
+            chips.forEach(chip => {
+                chip.style.opacity = "0.5";
+            });
         }, 3000);
 
-        // --- MARCO DE 3.5 SEGUNDOS ---
-        // A cortina já está quase invisível, ótimo momento para liberar interações por baixo
+        // --- 3.5 SEGUNDOS: O ÍCONE REJUNTA (FUSÃO DE RETORNO DO LOGO) ---
         setTimeout(function() {
-            console.log("OIO: 3.5s - Interface de chat totalmente revelada por baixo");
+            // Recolhe e esconde os microchips
+            chips.forEach(chip => {
+                chip.style.transform = "translate(0px, 0px) scale(0)";
+                chip.style.opacity = "0";
+            });
+            
+            // Traz a marca de volta com força total e um flash de luz
+            logo.classList.remove("logo-disintegrate");
+            logo.style.textShadow = "0 0 30px #00e5ff, 0 0 60px #ffffff";
         }, 3500);
 
-        // --- SEGURANÇA MÁXIMA: 4.0 SEGUNDOS ---
-        // Destrói o elemento da memória apenas depois que todas as transições terminaram
+        // --- 4.2 SEGUNDOS: INICIA FADE OUT DO PROJETO ---
         setTimeout(function() {
-            console.log("OIO: 4.0s - Limpando a Splash Screen da memória do sistema");
+            splash.classList.add("splash-fade-out");
+        }, 4200);
+
+        // --- 4.8 SEGUNDOS: LIMPEZA TOTAL DA MEMÓRIA ---
+        setTimeout(function() {
+            chips.forEach(chip => chip.remove());
             splash.remove();
-        }, 4000);
-        
+        }, 4800);
     }
 });
